@@ -1,0 +1,618 @@
+<script src="https://land.travel/apiweb/menuprofile.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.4/croppie.min.css" integrity="sha256-/n6IXDwJAYIh7aLVfRBdduQfdrab96XZR+YjG42V398=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.4/croppie.min.js" integrity="sha256-bQTfUf1lSu0N421HV2ITHiSjpZ6/5aS6mUNlojIGGWg=" crossorigin="anonymous"></script>
+<style>
+    .btnprofile {
+    border-radius: 3px !important;
+    font-size: 14px !important;
+    font-family: Roboto;
+    font-weight: 400;
+  }
+  .btnprofile:hover {
+    background-color: #d6b539 !important;
+  }
+  .btncancel.btnprofile {
+    height: auto;
+    padding: 5px 15px;
+  }
+  .btncancel.btnprofile:hover {
+    background-color: #ab3a3c !important;
+  }
+  .avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    margin-bottom: -50px;
+    border: solid #ffd740;
+  }
+  .sweetavatar{
+    background-image:url('https://land.travel/apiweb/img/submenu.jpg');
+    background-repeat:no-repeat; 
+    background-size: cover;
+    padding: 80px 80px !important;
+  }
+  .swal2-popup {
+    width:22em !important;
+    padding:0em !important;
+  }
+  .swal-wide{
+    width:21em !important;
+  }
+  .fileupload{
+    position: relative;
+    background-color: #ffd740;
+    left: 30px;
+    border-radius: 50px !important;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    top: -105px;
+  }
+  .passpopup {
+    width: 200px;
+    margin: auto;
+}
+  #passworda, #passwordb {
+    -webkit-transition: all 0.30s ease-in-out;
+    -moz-transition: all 0.30s ease-in-out;
+    -ms-transition: all 0.30s ease-in-out;
+    -o-transition: all 0.30s ease-in-out;
+  }
+  .badinput {
+    box-shadow: 0 0 10px rgba(235, 0, 0, 1);
+    border: 1px solid rgba(235, 0, 0, 1) !important;
+  }
+  .row {
+    padding: 15px 0;
+    vertical-align: bottom;
+  }
+  .col {
+    padding: 0 10px;
+    display: inline-block;
+    width: 49.5%;
+    font-weight: bold;
+    font-family: Black han sans;
+    text-transform: uppercase;
+    font-size: 24px;
+    color: #221f20;
+    text-align: center;
+  }
+</style>
+<script>
+    jQuery( document ).ready(function() {
+    var now = new Date();
+    now.setHours(0,0,0,0);
+    jQuery("#dob").attr("max",now.toISOString().substr(0, 10));
+    var nada="";
+    var uid = 138;
+    var url = window.location.href;
+    var flag  = url.indexOf("?");
+    if (flag != -1) {
+      uid = url.substring(url.indexOf("uid=")+4,url.indexOf("&"));
+      var user = url.substring(url.indexOf("user=")+5);
+      //console.log(uid+", "+user);
+      jQuery.ajax({
+        url: "https://land.travel/apiweb/datauser.php",
+        type: 'POST',
+        data: {user:uid},
+        dataType: 'json',
+        success:function(data){
+          //console.log(data);
+          //document.getElementById("user-back").src = "https://staging.landtours.co/uploads/"+data.results[0].img_background;
+          document.getElementById("user-pic").src = apiimg+data.results[0].img_avatar;
+          console.log("la imagen: "+data.results[0].img_avatar)
+          document.getElementById("user-pic2").src = apiimg+data.results[0].img_avatar;
+          jQuery("#profilename").html("<p style='text-transform:uppercase;font-family: Black Han Sans'>"+data.results[0].firstname+" "+data.results[0].lastname+"</p>");
+        }
+      });
+    }else {
+      jQuery.ajax({
+        url: "https://land.travel/apiweb/sessionwatch.php",
+        type: 'POST',
+        data: {nada:nada},
+        dataType: 'json',
+        success:function(session) {
+          //console.log(data);
+          uid = session[0];
+          jQuery.ajax({
+            url: "https://land.travel/apiweb/datauser.php",
+            type: 'POST',
+            data: {user:uid},
+            dataType: 'json',
+            success:function(data){
+              console.log(data);
+              if (data.results[0].img_avatar.substring(0,4) == "http"){
+                document.getElementById("user-pic").src = data.results[0].img_avatar;
+                document.getElementById("foto").name = data.results[0].img_avatar;
+              document.getElementById("background").name = data.results[0].img_avatar;
+              }else {
+                document.getElementById("user-pic").src = (data.results[0].img_avatar == "" || data.results[0].img_avatar == "blank")?apiimg+'avatar.jpg':"https://staging.landtours.co/uploads/"+data.results[0].img_avatar;
+                document.getElementById("foto").name = apiimg+data.results[0].img_avatar;
+                document.getElementById("background").name = apiimg+data.results[0].img_avatar;
+              }
+              jQuery("#profilename").html("<p style='text-transform:uppercase;font-family: Black Han Sans'>"+data.results[0].firstname+" "+data.results[0].lastname+"</p>");
+              if (data.results[0].img_background != "" || data.results[0].img_background == "blank") {
+                jQuery("#user-back").css("background-image","url('"+apiimg+data.results[0].img_background+"')");
+              }
+              values = data.results[0];
+              var flag = "";
+              jQuery.ajax({
+                url: "https://land.travel/build/js/countries.json",
+                type: "GET",
+                dataType: 'json',
+                success: function(result){
+                  jQuery("#country").append("<option value='' disabled selected hidden>Select a country</option>");
+                  for (var i = 0; i< result.length ; i++) {
+                    jQuery("#country").append("<option value='"+result[i].code2l+"'>"+result[i].name+"</option>");
+                    if (result[i].code2l === values.country || result[i].name === values.country || result[i].name_official === values.country) {
+                      jQuery("#country-name").text(result[i].name);
+                      flag = "https://land.travel/build/img/"+result[i].code2l.toLowerCase()+".png";
+                      document.getElementById("flag").src = flag;
+                    }
+                  }
+                  if (flag == "") {
+                    jQuery("#flag").hide();
+                  jQuery("#country-name").hide();
+                  }
+                  jQuery("#country").val(values.country);
+                },
+                error: ()=> {
+                  console.log("an error has ocurred");
+                }
+              });
+              for (prop in values){
+                jQuery("input[name='"+prop+"']").val(values[prop]);
+                jQuery("select[name='"+prop+"']").val(values[prop]);
+              }
+              if (values.fbid != "" ) {
+                jQuery("#pass-change").hide();
+              }
+            }
+          });
+        }
+      });
+    }
+});
+  
+</script>
+<div style="background-image:url('https://land.travel/apiweb/img/submenu.jpg');background-repeat:no-repeat; background;background-size: cover;padding: 150px 0 0 !important;margin-bottom:60px;background-position: center;text-align:center;" id="user-back"><img src="" id="user-pic" class="avatar">
+</div>
+<div align="center" style="padding-bottom: 15px;margin-top: 15px;">
+    <button type="button" class="btnprofile button_photo" style='font-size:10px; margin-right: 10%;' id='foto' name="" onclick="avatarCrop()">Change Picture</button>
+    <button type="button" class="btnprofile" style='font-size:10px' id='background' name="" onclick="bgCrop()">Change Background</button>
+</div>
+<div align="center" style="padding-bottom: 15px;">
+    <button type="button" class="btncancel btnprofile button_photo" style='font-size:10px; margin-right: 10%;' id='foto' name="" onclick="removePic('av')">Remove Picture</button>
+    <button type="button" class="btncancel btnprofile" style='font-size:10px' id='background' name="" onclick="removePic('bg')">Remove Background</button>
+</div>
+<p style="text-align: center; color: #221f20; font-size: 15px; padding: 10px; line-height: normal;">
+</p>
+<div class="row">
+    <div class="col">
+        <img id="flag" alt="Flag of user's country" src="" style="width:100px; margin-bottom:15px;"><br />
+        <span id="country-name" class="title_flag"></span>
+    </div>
+    <div class="col" style="width:48.5%;">
+        <p style="color:#ffd740; font-size: 32px; margin-bottom: 30px;" class="hour_title">00:00:00</p>
+        <span class="title_flag">Last login</span>
+    </div>
+</div>
+<script>
+function background(url) {
+
+    Swal.fire({
+        html: '<form enctype="multipart/form-data" method="post" id="form_bg"><div class="sweetavatar" id="bgprofile"></div>' +
+            '<div><img src="' + url + '" class="avatar"></div>' +
+            '<label for="filebg" class="fileupload" style="position: absolute; top:90px !important;left:220px !important;background-color:unset"><img src="https://land.travel/apiweb/img/draw.png"></label><br />' +
+            '<input id="filebg" style="display:none" type="file" accept="image/*"/>' +
+            '<p id="msgbg" style="margin-top: 10px;"></p></form>',
+        /*showCancelButton: true,*/
+        inputValidator: (value) => {
+            if (!value) {
+                return 'You need to write you password!'
+            }
+        },
+        preConfirm: () => {
+            if (document.getElementById("filebg").files[0] == null) {
+                jQuery("#msgbg").text("");
+                jQuery("#msgbg").text("You need to select a picture");
+                return false;
+            } else {
+                return jQuery("#form_bg");
+            }
+        }
+    }).then(function(results) {
+        var fd = new FormData(jQuery(results.value)[0]);
+        fd.append('img', jQuery(results.value)[0][0].files[0]);
+        jQuery.ajax({
+            url: 'https://land.travel/apiweb/update_bg.php',
+            type: 'post',
+            data: fd,
+            contentType: false,
+            processData: false,
+            dataType: 'json',
+            success: function(response) {
+                if (response.status == "OK") {
+                    jQuery("#user-pic").prev().css("background-image", "url('" + apiimg + results.value[0][0].files[0].name + "')");
+                    Swal.fire(
+                        'Image changed',
+                        'Background image changed successfully',
+                        'success'
+                    );
+                } else {
+                    Swal.fire(
+                        "Couldn't change the Background",
+                        'An error ocurred with the request, please try again later',
+                        'error'
+                    );
+                }
+            },
+            error: (response) => {
+                Swal.fire(
+                    "Couldn't change the Background",
+                    'An error ocurred with the request, please try again later',
+                    'error'
+                );
+            }
+        });
+    });
+    document.getElementById("filebg").onchange = function(e) {
+        let reader = new FileReader();
+        reader.onload = function() {
+            let preview = document.getElementById('bgprofile');
+            image = document.createElement('img');
+            image.src = reader.result;
+            document.getElementById("bgprofile").style.backgroundImage = 'url("' + image.src + '")';
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
+}
+
+function avatar(url) {
+
+    Swal.fire({
+        customClass: 'swal-wide',
+        html: '<form enctype="multipart/form-data" method="post" id="form_av"><div class="sweetavatar"></div>' +
+            '<div><img src="' + url + '" class="avatar" id="avatarpopup"></div>' +
+            '<label for="fileav" class="fileupload"><img src="https://land.travel/apiweb/img/shape.png"></label><br>' +
+            '<input id="fileav" name="img" style="display:none" type="file" accept="image/*"/>' +
+            '<p id="msgav"></p></p>',
+        focusConfirm: false,
+        confirmButtonText: ' Save!',
+        preConfirm: () => {
+            if (document.getElementById("fileav").files[0] == null) {
+                jQuery("#msgav").text("");
+                jQuery("#msgav").text("You need to choose a picture");
+                return false;
+            } else {
+                return jQuery("#form_av");
+            }
+        }
+    }).then(
+        function(results) {
+            var fd = new FormData(jQuery(results.value)[0]);
+            fd.append('uploadedFile', jQuery(results.value)[0][0].files[0]);
+            jQuery.ajax({
+                url: 'https://land.travel/apiweb/update_avatar.php',
+                type: 'post',
+                data: fd,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status == "OK") {
+                        document.getElementById("user-pic").src = apiimg + results.value[0][0].files[0].name;
+                        Swal.fire(
+                            'Image changed',
+                            'Avatar changed successfully',
+                            'success'
+                        );
+                    } else {
+                        Swal.fire(
+                            "Couldn't change the Avatar",
+                            'An error ocurred with the request, please try again later',
+                            'error'
+                        );
+                    }
+                },
+                error: (response) => {
+                    Swal.fire(
+                        "Couldn't change the Avatar",
+                        'An error ocurred with the request, please try again later',
+                        'error'
+                    );
+                }
+            });
+        }
+    );
+    document.getElementById("fileav").onchange = function(e) {
+        let reader = new FileReader();
+        reader.onload = function() {
+            let preview = document.getElementById('avatarpopup'),
+                image = document.createElement('img');
+            image.src = reader.result;
+            //user-pic.innerHTML = '';
+            //user-pic.append(image);
+            document.getElementById("avatarpopup").src = image.src;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
+
+}
+
+function avatarCrop() {
+    var crop = "";
+    var croppp = "";
+    jQuery("#avt-img-lbl").show;
+    jQuery("#boton").show;
+    jQuery("#button_back").hide;
+    jQuery("#needimg").hide;
+    Swal.fire({
+        title: 'Change Profile Picture',
+        html: "<div id='message-change' style='height: 300px;width:300px;border: grey solid 1px; color: grey;font-size: 3em;margin:auto;'><video id='video' style='height:300px;'></video><img src='' id='imgprueba'><canvas id='canvas' style='display:none;'></canvas></div><div id='demo'></div><div id='needimg' style='padding-bottom:32.5px; padding-top:32.5px;'></div><input type='file' style='display:none' id='avt-img'/><label for='avt-img' id='avt-img-lbl' class='btnprofile btnprofile222' accept='image/png, image/jpg'>Select an image</label><button id='boton' class='btnprofile' style='margin-left:5px;'>Take a photo</button><button id='button_back' class='btnprofile' onclick='avatarCrop()' style='margin-left:5px; display:none;'>Return</button><div id='agregar' style='padding-top:10px;'><div id='nuevo'></div></div>",
+        onBeforeOpen: () => {
+            var demo = document.getElementById("demo");
+            var croppie = new Croppie(demo, {
+                viewport: { width: 200, height: 200, type: 'circle' },
+                boundary: { width: 300, height: 300 },
+            });
+            jQuery(demo).hide();
+            document.getElementById("avt-img").onchange = function(e) {
+                let reader = new FileReader();
+                reader.onload = function() {
+                    croppie.bind({ url: reader.result });
+                    crop = croppie;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+                jQuery(demo).show();
+                jQuery("#message-change").hide();
+                jQuery("#boton").hide();
+                jQuery("#button_back").show();
+            }
+        },
+
+        preConfirm: () => {
+            if (document.getElementById("avt-img").files.length == 0) {
+                jQuery("#needimg").text("You need to select a picture to upload");
+                jQuery("#needimg").css("color", "#d85f4d");
+                return false;
+            } else {
+                return crop;
+            }
+        }
+    }).then((image) => {
+        console.log(image.value);
+        var fd = new FormData();
+        image.value.result('blob').then((blob) => {
+            fd.append('uploadedFile', blob);
+            jQuery.ajax({
+                url: 'https://land.travel/apiweb/update_avatar.php',
+                type: 'post',
+                data: fd,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function(data) {
+                    if (data.status == "OK") {
+                        let reader = new FileReader();
+                        reader.onloadend = function() {
+                            document.getElementById("user-pic").src = reader.result;
+                            document.getElementById("user-menu-pic").src = reader.result;
+                        }
+                        reader.readAsDataURL(blob);
+                        Swal.fire({
+                            type: 'success',
+                            title: 'Avatar changed succesfully',
+                        });
+                    }
+                }
+            });
+        });
+    });
+    jQuery("#boton").click(function() {
+        function tieneSoporteUserMedia() {
+            return !!(navigator.getUserMedia || (navigator.mozGetUserMedia || navigator.mediaDevices.getUserMedia) || navigator.webkitGetUserMedia || navigator.msGetUserMedia)
+        }
+
+        function _getUserMedia() {
+            return (navigator.getUserMedia || (navigator.mozGetUserMedia || navigator.mediaDevices.getUserMedia) || navigator.webkitGetUserMedia || navigator.msGetUserMedia).apply(navigator, arguments);
+        }
+
+        jQuery("#avt-img-lbl").hide();
+        jQuery("#button_back").show();
+        if (jQuery("#boton").text() == "Take a photo") {
+            jQuery("#boton").text("Take photo");
+        }
+        var $video = document.getElementById("video"),
+            $canvas = document.getElementById("canvas"),
+            $boton = document.getElementById("boton");
+        if (tieneSoporteUserMedia()) {
+            _getUserMedia({ video: true },
+                function(stream) {
+                    console.log("Permiso concedido");
+                    $video.srcObject = stream;
+                    $video.play();
+                    $boton.addEventListener("click", function() {
+                        $video.pause();
+                        var contexto = $canvas.getContext("2d");
+                        $canvas.width = $video.videoWidth;
+                        $canvas.height = $video.videoHeight;
+                        contexto.drawImage($video, 0, 0, $canvas.width, $canvas.height);
+
+                        /*var foto = $canvas.toDataURL("image/png");*/
+                        var imagen = document.getElementById("imgprueba");
+                        /*var fotico = document.getElementById("canvas");*/
+                        imagen.src = $canvas.toDataURL("image/png");
+
+                        var croppie = new Croppie(imagen, {
+                            viewport: { width: 200, height: 200, type: 'circle' },
+                            boundary: { width: 300, height: 300 },
+                        });
+                        jQuery(imagen).hide();
+                        imagen.onchange = function(e) {
+                            let reader = new FileReader();
+                            reader.onload = function() {
+                                croppie.bind({ url: reader.result });
+                                croppp = croppie;
+                            }
+                            reader.readAsDataURL(e.target.files[0]);
+                            jQuery(imagen).show();
+                            jQuery("#message-change").hide();
+                        }
+                        jQuery('#nuevo,#enviar').click(function(event) {
+                            debugger;
+                            dataUrl = $canvas.toDataURL("image/png");
+                            croppie.bind({ url: dataUrl });
+                            croppp = croppie;
+                            croppp.result('base64').then((base) => {
+                                var foto = base;
+                                var xhr = new XMLHttpRequest();
+                                xhr.open("POST", "https://land.travel/apiweb/guardar_foto.php", true);
+                                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                xhr.send(foto);
+                                xhr.onreadystatechange = function() {
+                                    if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                                        alert("The picture was sent correctly");
+                                        console.log(xhr);
+                                        Swal.fire({
+                                            type: 'success',
+                                            title: 'Avatar changed succesfully',
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                        let reader = new FileReader();
+                                        reader.onloadend = function() {
+                                            document.getElementById("user-pic").src = reader.result;
+                                            document.getElementById("user-menu-pic").src = reader.result;
+                                            reader.readAsDataURL(foto);
+                                        }
+                                    } else {
+                                        alert("The picture was not sent correctly");
+                                    }
+                                }
+                            });
+                        });
+                    });
+                },
+                function quitar() {
+                    //console.log("Permiso denegado o error: ", error);
+                    console.log("Permiso denegado o error: ");
+                    alert("The camera cannot be accessed, or you did not give permission");
+                    avatarCrop();
+                    //$estado.innerHTML = "No se puede acceder a la cámara, o no diste permiso.";
+                });
+        } else {
+            alert("Lo siento. Tu navegador no soporta esta característica");
+        }
+        jQuery("#boton").click(function(event) {
+            jQuery("video").remove();
+            jQuery("#boton").remove();
+            jQuery("#demo").remove();
+            jQuery(".btnprofile222").remove();
+            jQuery(".swal2-confirm").remove();
+
+        });
+        jQuery("#boton").click(function(event) {
+            jQuery("#nuevo").append("<button class='swal2-styled btnlogin' id='enviar' style='max-width: 70px;'>OK</button>");
+
+        });
+    });
+}
+
+function bgCrop() {
+    var crop = "";
+    jQuery("#message-change").hide;
+
+    Swal.fire({
+        title: 'Change Background Picture',
+        html: "<div id='message-change' style='font-weight: bold;height: 300px;width:300px;border: grey solid 1px; color: grey;font-size: 3em;margin:auto;padding-top: 25%;margin-bottom:20px;'>Select a picture</div><div id='demo'></div><input type='file' style='display:none' id='bg-img' accept='image/png, image/jpg'/><label for='bg-img' class='btnprofile'>Select an image</label>",
+        onBeforeOpen: () => {
+            var demo = document.getElementById("demo");
+            var croppie = new Croppie(demo, {
+                viewport: { width: 280, height: 200 },
+                boundary: { width: 300, height: 300 }
+            });
+            jQuery(demo).hide();
+            document.getElementById("bg-img").onchange = function(e) {
+                let reader = new FileReader();
+                reader.onload = function() {
+                    croppie.bind({ url: reader.result });
+                    crop = croppie;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+                jQuery(demo).show();
+                jQuery("#message-change").hide();
+            }
+        },
+        preConfirm: () => {
+            if (document.getElementById("bg-img").files.length == 0) {
+                jQuery("#message-change").text("You need to select a picture to upload");
+                jQuery("#message-change").css("color", "#d85f4d");
+                jQuery("#message-change").css("padding-top", "5%");
+                return false;
+            } else {
+                return crop;
+            }
+        }
+    }).then((image) => {
+        var fd = new FormData();
+        image.value.result({ type: 'blob', size: { width: 700, height: 500 } }).then((blob) => {
+            fd.append('img', blob);
+            jQuery.ajax({
+                url: 'https://land.travel/apiweb/update_bg.php',
+                type: 'post',
+                data: fd,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function(data) {
+                    if (data.status == "OK") {
+                        let reader = new FileReader();
+                        reader.onloadend = function() {
+                            jQuery("#user-back").css("background-image", "url('" + reader.result + "')");
+                            jQuery("#menu-item-129725").css("background-image", "url('" + reader.result + "')");
+                        }
+                        reader.readAsDataURL(blob);
+                        Swal.fire({
+                            type: 'success',
+                            title: 'Background changed succesfully',
+                        });
+                    }
+                }
+            });
+        });
+    });
+}
+
+function removePic(type) {
+    Swal.fire({
+        title: "Are you sure you want to delete your picture?",
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        type: 'warning'
+    }).then((response) => {
+        if (response.value === true) {
+            jQuery.ajax({
+                url: "https://land.travel/apiweb/removepic.php",
+                type: 'POST',
+                data: { type: type },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.status == 'OK') {
+                        Swal.fire('Picture removed correctly', '', 'success');
+                        location.reload();
+                    } else {
+                        Swal.fire("Something ocurred", data.results, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire("Something ocurred", 'There was an incovinience while processing your request, please try again later', 'error');
+                }
+            })
+        }
+    });
+}
+</script>

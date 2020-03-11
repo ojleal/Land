@@ -1,0 +1,670 @@
+<script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.1.0"></script>
+<script src="https://land.travel/apiweb/menuprofile.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Black+Han+Sans" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
+<style>
+    .js .inputfile {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile + label {
+    max-width: 100%;
+    font-size: 18px;
+    font-family: "Black Han Sans"; 
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    padding: 0;
+}
+
+.no-js .inputfile + label {
+    display: none;
+}
+
+.inputfile:focus + label,
+.inputfile.has-focus + label {
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+
+/* style input */
+
+.inputfile-1 + label {
+    color: #fffff !important;
+}
+
+.inputfile-1:focus + label,
+.inputfile-1.has-focus + label,
+.inputfile-1 + label:hover {
+    color: #fffff;
+}
+
+
+.box {
+  background-color: #ffd63f;
+  padding: 32.5px 0px;
+}
+
+.box + .box {
+  margin-top: 0px;
+}
+
+.content {
+  max-width: 100%;
+  height: 200px;
+  text-align: left;
+  padding: 0px;
+  display: inline-block;
+  align-content: center;
+}
+
+#holder {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    text-align: center;
+    overflow: hidden;
+    display: inline-block;
+}
+
+#holder img {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    z-index: -1;
+    text-align: center;
+    overflow: hidden;
+    margin-top: 0px;
+}
+
+.imageThumb {
+  width: 140px;
+  height: 140px;
+  border: 0px solid;
+  padding: 1px;
+  cursor: pointer;
+  float: left;
+  display: inline-block;
+}
+.pict {
+  display: inline-block;
+  padding-right: 2px;
+  margin: 0px 0px 0px 0px;
+}
+.remove {
+  display: inline-block;
+  border: 0px solid #ffd740;
+  color: #F35151;
+  text-align: right;
+  cursor: pointer;
+}
+.remove:hover {
+  color: black;
+}    
+
+.cover {
+  display: inline-block;
+  width: 86px;
+  height: 24px;
+  font-family: "Roboto";
+  font-size: 12px;
+  font-weight: 500;
+  float: left;
+  border: 2px solid #ffd740;
+  color: #ffd740;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  margin-left: 30px;
+  margin-top: -30px;
+}
+.cover:hover {
+  background: white;
+  color: #ffd740;
+}
+
+.container .btn {
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  background-color: #ffd740;
+  color: #5d4037;
+  font-family: "Roboto";
+  font-size: 12px;
+  padding: 5px 24px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.container .btn:hover {
+  background-color: black;
+}
+
+  .container {
+    width: 85% !important;
+  }
+  
+ 
+  .et_right_sidebar #main-content .container:before {
+    right: 0%!important;
+    background-color: #fefefe !important;
+}
+
+
+    .btnlogin { 
+    width: 216px;
+    height: 42px;
+    color: #5d4037!important;
+    border-width: 0px!important;
+    border-radius: 8px;
+    font-size: 19px;
+    background-color: #ffd740;
+   box-shadow: 0 4px 7px 0 rgba(64, 49, 17, 0.3);
+  }
+
+    input[type=text] {
+    background-color: #e4ecee;
+    border-radius: 4px;
+    width: 350px;
+    height: 42px;
+    box-shadow: 0 0 black;
+    padding: 2px;
+    border: 1px solid #bbb;  
+    font-family: "Roboto";
+    font-size: 12px;
+}
+  
+  
+input[type=textarea] {
+    border-radius: 4px;
+    width: 350px;
+    height: 127px;
+    box-shadow: 0 0 black;
+    padding: 2px;
+    border: 1px solid #bbb;
+}
+
+/* Checkbox */
+.checkbox input[type="checkbox"] {
+    width: auto;
+    opacity: 0.00000001;
+    position: absolute;
+    left: 0;
+    margin-left: -20px;
+}
+.checkbox label {
+    position: relative;
+}
+.checkbox label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 4px;
+    width: 22px;
+    height: 22px;
+    transition: transform 0.28s ease;
+    border-radius: 3px;
+    border: 2px solid #ffd740;
+    background-color: #ffd740;
+}
+  
+.checkbox label:after {
+  content: '';
+    display: block;
+    width: 10px;
+    height: 5px;
+    border-bottom: 2px solid #FFFFFF;
+    border-left: 2px solid #FFFFFF;
+    -webkit-transform: rotate(-45deg) scale(0);
+    -moz-transform: rotate(-45deg) scale(0);
+    -ms-transform: rotate(-45deg) scale(0);
+    transform: rotate(-45deg) scale(0);
+    position: absolute;
+    top: 12px;
+    left: 10px;
+}
+.checkbox input[type="checkbox"]:checked ~ label::before {
+    color: #FFFFFF;
+}
+
+.checkbox input[type="checkbox"]:checked ~ label::after {
+    -webkit-transform: rotate(-45deg) scale(1);
+    -moz-transform: rotate(-45deg) scale(1);
+    -ms-transform: rotate(-45deg) scale(1);
+    transform: rotate(-45deg) scale(1);
+}
+
+.checkbox label {
+    min-height: 34px;
+    display: block;
+    padding-left: 40px;
+    margin-bottom: 0;
+    font-weight: normal;
+    cursor: pointer;
+    vertical-align: sub;
+}
+.checkbox label span {
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+.checkbox input[type="checkbox"]:focus + label::before {
+    outline: 0;
+}
+    input[type=text] {
+    background-color: #e4ecee;
+    border-radius: 4px;
+    width: 350px;
+    height: 42px;
+    box-shadow: 0 0 black;
+    padding: 2px;
+    border: 1px solid #bbb;  
+}
+
+.custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+    background-color: #ffd740;
+}
+
+.custom-switch .custom-control-input:checked~.custom-control-label::before {
+    background-color: #ffd740;
+}
+
+  
+select   {
+    background-color: #e4ecee;
+    font-family: "Roboto";
+    border-radius: 4px;
+    width: 350px;
+    height: 42px;
+    box-shadow: 0 0 black;
+    padding: 0px;
+    border: 1px solid #bbb;  
+}
+
+#slideshow {
+    max-height: 300px;
+    max-width: 350px;
+}
+
+#holder {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #FFFFFF;
+    overflow: hidden;
+}
+
+#holder img {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #FFFFFF;
+    overflow: hidden;
+}
+
+#window {
+    width: 350px;
+    height: 50px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+}
+
+#imageHolder {
+    height: 50px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#imageHolder img {
+    width: 35px;
+    height: 50px;
+    float: left;
+    margin-right: 5px;
+}
+  
+#imagecover {
+    width: 140px;
+    height: 140px;
+    position: relative;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #FFFFFF;
+    overflow: hidden;
+}  
+  
+#imagecover img{
+    width: 140px;
+    height: 140px;
+    position: relative;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #FFFFFF;
+    overflow: hidden;
+} 
+  
+.thumbnail {
+
+    height: 100px;
+    margin: 10px;
+    float: left;
+}
+
+
+.thumb-image {
+  width: 140px;
+  height: 140px;
+}
+</style>
+
+<form id="form" name="form" action="modtour.php" method="POST" enctype="multipart/form-data">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col">
+                <label for="title" style="font-family: Roboto;color:#ffd740; margin-bottom: 5px">Tour Title</label>
+                <input name="title" id="title" type="text" required class="form-control" placeholder="Tour title">
+            </div>
+            <div class="col">
+                <label for="location" style="font-family: Roboto;color:#ffd740; margin-bottom: 5px">Location</label>
+                <input name="location" id="location" type="text" required class="form-control" placeholder="Location">
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col">
+                <label style="font-family: Roboto;color:#ffd740; margin-bottom: 5px">Tour description</label>
+                <textarea class="form-control" row=5 name="description" id="description" placeholder="DESCRIPTION" style="margin-bottom: 10px;background-color: #e4ecee; border-radius: 4px; width: 350px; height: 175px; box-shadow: 0 0 black;
+    padding: 0px;
+    font-size: 12px;
+    border: 1px solid #bbb; " required></textarea>
+            </div>
+            <div class="col">
+                <label style="font-family: Roboto;color:#ffd740; margin-bottom: 5px">Type</label>
+                <select class="form-control" name="tourtype" id="tourtype" style="margin-bottom: 10px; font-family: Roboto;font-size: 12px;width: 350px;background-color: #e4ecee;" required>
+                    <option value="0" selected>General</option>
+                    <option value="1">Book</option>
+                    <option value="2">Film </option>
+                    <option value="3">Music </option>
+                </select>
+                <label style="font-family: Roboto;color:#ffd740; margin-bottom: 5px;">Category</label>
+                <br>
+                <select class="form-control" name="category" id="category" style="margin-bottom: 10px; font-family: Roboto;font-size: 12px; width: 350px;background-color: #e4ecee;" required>
+                    <option value="0" selected>General</option>
+                    <option value="1">Entertainment</option>
+                    <option value="2">Outdoor Activities/Fitness</option>
+                    <option value="3">Business and Industry</option>
+                    <option value="4">Family and Relationships</option>
+                    <option value="5">Fitness and Wellnes</option>
+                    <option value="6">Food and Drink</option>
+                    <option value="7"> Hobbies and Activities</option>
+                    <option value="8">Lifestyle and Culture</option>
+                    <option value="9">People</option>
+                    <option value="10">Places and Events</option>
+                    <option value="11">Shopping and Fashion</option>
+                    <option value="12">Sports and Outdoors</option>
+                    <option value="13">Technology</option>
+                    <option value="14">Bars and pubs</option>
+                    <option value="15">Concerts</option>
+                    <option value="16">Dance clubs</option>
+                    <option value="17"> Darts</option>
+                    <option value="18"> Fashion events</option>
+                    <option value="19">Movies</option>
+                    <option value="20"> Music - Country</option>
+                    <option value="21">Music - Jazz</option>
+                    <option value="22">Music - Rock</option>
+                    <option value="23">Music - Hip-Hop/Rap</option>
+                    <option value="24">Music - Electronic</option>
+                    <option value="25">Music - Folk</option>
+                    <option value="26"> Music - Christian</option>
+                    <option value="27">Music - Classical</option>
+                    <option value="28">Music - Pop</option>
+                </select>
+                <label style="font-family: Roboto;color:#ffd740; margin-bottom: 5px;">Language</label><br>
+                <select class="form-control" name="lang" id="lang" style="margin-bottom: 10px; font-family: Roboto;font-size: 12px; width: 350px;background-color: #e4ecee;" required>
+                    <option value="0" selected>English</option>
+                    <option value="1">Spanish</option>
+                    <option value="2">French</option>
+                    <option value="3">Japanese</option>
+                    <option value="4">Portuguese</option>
+                    <option value="5">Russian</option>
+                    <option value="6">Chinese</option>
+                    <option value="7">Italian</option>
+                </select>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col">
+                <div class="checkbox" margin-left=70px>
+                    <input type="checkbox" id="check-tour" name="" value="">
+                    <label for="check-tour"><span>Free tour</span></label>
+                </div>
+            </div>
+            <div class="col">
+                <div class="checkbox">
+                    <input type="checkbox" id="check-public" name="" value="">
+                    <label for="check-public"><span>Public tour will be visible for everyone</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col">
+                <Label style="font-family: Roboto;color:#ffd740">Price</label>
+                <input class="form-control" type="text" name="price" id="price" value="" data-type="currency" placeholder="price" style="width:163px; height:42px;margin-bottom: 20px;" required>
+            </div>
+        </div>
+        <div class="row content">
+            <div class="col box" style="width: 140px; float: left; margin-top: 0px;margin-left: 15px;">
+                <input type="file" name="uploadedFilep[]" style="display:none;" id="uploadedFilep" class="inputfile inputfile-1" accept="image/png, image/jpeg, image/gif" data-multiple-caption="{count} files selected" multiple />
+                <label for="uploadedFilep" style="padding-left: 10px; font-family: Black Han Sans;"><img name="icon-add" id="icon-add" src="https://land.travel/wp-content/uploads/2019/02/add-icon.png" alt="" style="margin-left: 45px;"><br><span style="color:white;font-weight: normal;">ADD IMAGES</span></label>
+            </div>
+            <Div id="holder" style="width: 140px; float: left; margin-top: 0px;">
+                <img src="https://staging.landtours.co/uploads/loading.gif" id="slidecover" style="padding-right: 2px;" /><input type="file" name="uploadedFile[]" style="display:none;" id="uploadedFile" class="inputfile2 inputfile-2" accept="image/png, image/jpeg, image/gif" /><label for="uploadedFile" style="padding-left: 50px; font-family: Roboto;margin-top:-25px;"><span style="background-color:#ffd740;color:#5d4037;font-weight: normal;">COVER</span></label>
+            </Div>
+            <Div id="holder" style="width: 140px; float: left; margin-top: 0px;">
+                <img src="https://staging.landtours.co/uploads/loading.gif" id="slideshow" style="padding-right: 2px;" />
+            </Div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col d-flex justify-content-center">
+                <button type="submit" id="btn_submit" class="btnlogin">EDIT GUIDE</button>
+            </div>
+            <div class="col d-flex justify-content-right">
+                <button type="button" id="btn_cancel" class="btnlogin" onclick="window.location.href='https://land.travel/my-tours/'">CANCEL</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+jQuery(document).ready(function() {
+    new AutoNumeric('#price', {
+        currencySymbol: ' $',
+        decimalCharacter: '.',
+        digitGroupSeparator: ',',
+        selectOnFocus: false,
+    });
+
+    var nada = "";
+    var guide = getParameterByName('guide');
+
+    var i = 0;
+
+
+    jQuery.ajax({
+        url: "https://land.travel/apiweb/gettour.php",
+        type: 'GET',
+        data: { guide: guide },
+        dataType: 'json',
+        success: function(data) {
+            var guide = data.results[i].id;
+            var titleguide = data.results[i].title;
+            var description = data.results[i].description;
+            var category = data.results[i].category;
+            var active = data.results[i].active;
+            var location = data.results[i].location;
+            var type = data.results[i].type;
+            var price = data.results[i].price;
+            var public = data.results[i].public;
+            var free = data.results[i].published;
+            var image = data.results[i].image1;
+            var images_1 = data.results[i].image1;
+            var imagecover = 'https://staging.landtours.co/uploads/' + data.results[i].image_cover;
+            var res = image.split("|");
+            var image1 = res;
+            for (i = 0; i < image1.length; i++) {
+                image1[i] = "https://staging.landtours.co/uploads/" + image1[i];
+            }
+            if (image1.length > 1) { image1.pop(); }
+            $("#title").val(titleguide);
+            $("#description").val(description);
+            $("#location").val(location);
+            $("#category").val(category);
+            $("#tourtype").val(type);
+            $("#price").val(price);
+            $("#images_1").val(images_1);
+            $("#imagecover").attr("src", imagecover);
+            $("#guide").val(guide);
+            $("#image1").attr("src", image1);
+            $('#slidecover').attr('src', imagecover);
+            if (public == 1) {
+                $("#check-public").prop("checked", true);
+            }
+            if (free == 1) {
+                $("#check-free").prop("checked", true);
+            }
+
+
+            $('#imageHolder').css('width', image1.length * 40);
+
+            $.each(image1, function(index, value) {
+                $('#imageHolder').append('<img src="' + value + '" />');
+            });
+
+
+            beginNow = setInterval(forwardImage, 4000);
+            //Thumbnail
+            $('#imageHolder img').click(function() {
+                var newImage = $(this).attr('src');
+                $.each(image1, function(index, value) {
+                    if (value == newImage) {
+                        changeImage(index);
+                    }
+                });
+                clearInterval(beginNow);
+            });
+
+            function currentImageKey() {
+                i = jQuery.inArray($('#slideshow').attr('src'), image1);
+                return i
+            }
+
+
+            function backwardsImage() {
+                currentImageKey();
+                if (i == 0) {
+                    //changeImage(images.length - 1);
+                } else {
+                    changeImage(i - 1);
+                }
+            }
+
+            function forwardImage() {
+                currentImageKey();
+                if (i < image1.length - 1) {
+                    changeImage(i + 1);
+                } else {
+                    changeImage(0);
+                }
+            }
+
+            function changeImage(i) {
+                $('#slideshow').stop().animate({
+                    opacity: 0,
+                }, 200, function() {
+                    $('#slideshow').attr('src', image1[i]);
+                    $('#holder img').on('load', function() {
+                        $('#slideshow').stop().animate({
+                            opacity: 1,
+                        }, 200)
+                    })
+                })
+            }
+        }
+
+    });
+});
+</script>
+<script>
+$(document).on('click', '.remove', function() {
+    $(this).parent().remove();
+});
+
+$(document).ready(function() {
+    if (window.File && window.FileList && window.FileReader) {
+        $("#uploadedFilep").on("change", function(e) {
+            var files = e.target.files,
+                filesLength = files.length;
+            if (filesLength > 6) {
+                alert("You can only select up to 6 files");
+                $('#uploadedFilep').val("");
+                return false;
+            }
+            $(".pict").remove();
+            for (var i = 0; i < filesLength; i++) {
+                var f = files[i];
+                var fileReader = new FileReader();
+                var name = e.target.files[i].name
+                fileReader.onload = (function(e) {
+                    var file = e.target;
+                    $('<span class="pict"><img class="remove" src="https://land.travel/wp-content/uploads/2019/02/icon-delete.png" alt="" style="float:top;margin-left:-30px; margin-top: 5px;"><img class="imageThumb" src="' + file.result + '" title="' + name + '"/><br/><span class="cover">Set Cover</span></span>').insertAfter("#holder");
+                });
+                fileReader.readAsDataURL(f);
+            }
+            $(".remove").click(function() {
+                $(this).parent(".pict").remove();
+            });
+            $(".cover").click(function() {
+                $("#slideshow").attr("src", "https://staging.landtours.co/uploads/suiza.jpg")
+            });
+        });
+    } else {
+        alert("Your browser doesn't support to File API")
+    }
+});
+</script>

@@ -1,0 +1,947 @@
+<!-- ULTIMO BLOQUE  -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+<script type="text/javascript">
+  var guiasseguidores;
+  var countgen = 0;
+function validImage(imgs,ubication)
+  {
+    var ext = imgs.substring(imgs.lastIndexOf("."));
+    if(ext != ".jpg" && ext != ".png" && ext != ".gif" && ext != ".jpeg" && ext != ".image")
+    {
+      if(ubication == "cover")
+       return "https://land.travel/apiweb/img/images.jpg";
+      else
+        return "https://staging.landtours.co/uploads/avatar.jpg";
+    }
+    else
+    {
+        return "https://staging.landtours.co/uploads/"+imgs;
+    } 
+  }  
+function favtour(tour,src)
+  {  
+    if (src==='https://land.travel/apiweb/img/heart.png')
+    {
+      var guide='#'+tour;
+    var  favo = 1;
+      var rutat= document.getElementById(tour+'linkg').href.substring(0,document.getElementById(tour+'linkg').href.indexOf("&fav=")+5).concat(favo);
+      document.getElementById(tour+'linkg').href=rutat;
+      jQuery.ajax({
+          url: "https://land.travel/apiweb/mytoursaddfav.php",
+      type: 'GET',
+      data: {tour:tour},
+            dataType: 'json',
+      success:function(data)
+      {
+              jQuery(guide).attr("src", "https://land.travel/apiweb/img/heart2.png");
+            Swal.fire( 'Good!','guide added to favorites!','success')
+      }//fin del success
+    });//fin del ajax
+    }  //fin del if
+    else
+    {
+      var guide='#'+tour;
+    var favo = 0;
+        var rutat= document.getElementById(tour+'linkg').href.substring(0,document.getElementById(tour+'linkg').href.indexOf("&fav=")+5).concat(favo);
+        document.getElementById(tour+'linkg').href=rutat;
+    jQuery.ajax({
+          url: "https://land.travel/apiweb/mytoursdelfav.php",
+          type: 'GET',
+          data: {tour:tour},
+          dataType: 'json',
+          success:function(data)
+          {
+             jQuery(guide).attr("src", "https://land.travel/apiweb/img/heart.png")
+            Swal.fire( 'Good!','guide removed from favorites!','warning')
+          }
+          
+        });   
+    } // fin del else
+    return favo;
+ }
+function titletrim(title)
+{
+
+} 
+function deltour(tour)
+{  
+    tour=tour.replace("tourdel","");
+    Swal.fire({title: 'Are you sure to delete this guide?',
+    text: "You won't be able to revert this!",
+      type: 'warning',
+      showCancelButton: true,
+      //confirmButtonColor: '#3085d6',
+      //cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+                if (result.value) {
+                  jQuery.ajax({
+                      url: "https://land.travel/apiweb/deltour.php",
+                  type: 'GET',
+                  data: {tour:tour},
+                          success:function(data)
+                    {
+                          Swal.fire({title: '<strong>Guide Deleted</strong>',  type: 'info',
+                                          html:'<br><strong>Please press Great to continue</strong> ' ,
+                                          focusConfirm: false,
+                                          confirmButtonText:'<i class="fa fa-thumbs-up"></i> Great!',
+                                          confirmButtonAriaLabel: 'Thumbs up, great!',
+                                          cancelButtonText:'<i class="fa fa-thumbs-down"></i>',
+                                          cancelButtonAriaLabel: 'Thumbs down',
+                                        }).then(function () { window.location.href ='https://land.travel/my-guides/'; },function () { return false; });//fin del elemento sweet button
+                          }//fin del success
+                });// fin del ajax
+                }//fin del if
+            }) // fin del sweetalert principal
+  }//fin de la funcion deletetour  
+//function to consume endpoints for search  //criterium/value/clear-yesno
+function searchmyguides(way,valor,cb)
+{
+  var nada="";
+  var fav="";
+  var param = {type: way,value: valor};
+  if (param.value == '') {
+      param.type = 'default';
+    }
+    if (cb=="yes"){
+      jQuery("#toursexplore").html("");
+      jQuery("#toursexplore").off();
+  }
+  jQuery.ajax({
+      url: "https://land.travel/apiweb/tours_search_2.php",
+    type: 'GET',
+    data: param,
+      dataType: 'json',
+      beforeSend: function()
+      {
+        jQuery("#toursexplore").html("<div class='loader'></div>");
+      },
+    success:function(data)  {
+      jQuery("#toursexplore").html("");
+          var t=data.results.length;
+      if (t>0) {
+        var i=0;
+        while (i < t) 
+        {
+            var noprint=0; //just to print
+            var guide=data.results[i].id;
+            var titleguide=(data.results[i].title.length>21)?data.results[i].title.substring(0, 18)+"...":data.results[i].title;
+            var description=data.results[i].description;
+            var category=data.results[i].cattitle;  
+                  var categoryid=data.results[i].category;  
+            var active=data.results[i].active;  
+            var image=data.results[i].image1;
+                  var cover=(data.results[i].image_cover.substring(0,4) == "http")?data.results[i].image_cover: (validImage(data.results[i].image_cover,"cover"));
+                  var fav=data.results[i].fav;
+                  var userguide=data.results[i].uid;
+                  var owner = data.results[i].owner_name;
+                  var avgrating=data.results[i].avgrating;
+                  var numratings=data.results[i].numratings;
+
+                  var pricetext =((data.results[i].price.trim()=="") || (parseFloat(data.results[i].price) <=0 ))?"Free":"Paid";
+                        var userUrl = "https://land.travel/user-profile/?uid="+userguide+"&user="+owner;
+                  var favsrc='';
+                  var imagepro='';
+                      var user_avatar=data.results[i].img_avatar;
+                        if (user_avatar==""){
+                          user_avatar="avatar.jpg";
+                        }
+                        imagepro=(user_avatar.substring(0,4) == "http")?user_avatar: (validImage(user_avatar,"avatar"));      
+                  if ((way=="fav") && (fav==0)  && (valor==1) )  //print only favorite guides
+            {
+              noprint=1; 
+            }
+                  if ((way=="categories") && (valor!=categoryid)  && (valor!=0) )  //print only category guides
+            {
+              noprint=1; 
+            }
+                  if ((way=="search") && (titleguide.indexOf(valor))<0)  //print only category guides
+            {
+              noprint=1; 
+            }
+                  if (fav == 0)
+            {
+              favsrc='https://land.travel/apiweb/img/heart.png';
+            }else{
+              favsrc='https://land.travel/apiweb/img/heart2.png';
+            }
+                  noprint = 0;
+                  if (noprint==0)  //print or not this guide
+            {       
+                      
+                      /*
+              jQuery.ajax({
+                url: "https://land.travel/apiweb/datauser.php",
+                type: 'POST',
+                data: {user:userguide},
+                dataType: 'json',
+                        async: false,
+                        beforeSend: function()
+                        {
+  "<div class="loader"></div>";
+                        },
+                success:function(data)
+                {
+                  var user_avatar=data.results[0].img_avatar;
+                            if (user_avatar==""){
+                                user_avatar="avatar.jpg";
+                            }
+                            imagepro=(user_avatar.substring(0,4) == "http")?user_avatar: "https://staging.landtours.co/uploads/"+(validImage(user_avatar));      
+                }
+              });
+              */
+                var price=data.results[i].price;           
+                      var csr=data.results[i].avgcsr;
+              //alert("avgcsr"+csr);
+              if (csr=="") {  csr="-";}    
+                let output="<div class='card' style='margin-bottom:20px;height: 209px !important;margin-left: 9px !important;'><a href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"' class='image-placeholder' style='width: auto !important;background-image: url("+cover+") !important;position:relative;display:block;'>";
+                          output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>"+pricetext+"</div>";      
+                 /*
+                  if (price==0)
+                  {
+                    output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>Free</div>"; 
+                  }else{
+                   output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>"+price+"</div>"; 
+                  }
+                 */
+                output+="<span style='position:absolute; top:5px;right:75px;'><img id="+guide+" style='top:8px !important; margin-right: 15px' src='"+favsrc+"' class='status_not_faved' onclick='favtour(this.id,this.src);return false;'></span><div style='/*display:inline-block;*/margin-left:auto;/*margin-left: 15%;*/ margin-right: 30px;background-image:url(https://land.travel/apiweb/img/bandera2.png);padding-left: 5px;padding-right: 5px;height: 60px;width: 55px;'><div align='center' style='color:#5d4037; padding-bottom:3px'>";
+                output+="<span>"+csr+"</span>";
+                  output+="</br><span style='top: 0px;position: relative;'>SMESRS</span></div></div><div class='div-imagen' style='top: -9px !important'><div><img src='https://land.travel/apiweb/img/3puntos.png'/></div><div class='desvanecer'><ul class='lista'><li class='listaguia'><span onclick='reportGuide("+guide+");return false;' style='color:#5d4037'>Report Guide</span></li></ul></div></div><div class='The-sun-also-rises'></div></a><div style='width:40px;height:40px;float:left;margin-left: 10px;margin-right: 10px;'><a href='"+userUrl+"'><img  style='width:40px;position:relative;border-radius:50%' src='"+imagepro+"'></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20'><a class='linkgg' id='"+guide+"linkg' style='color: #221f20;' href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"'>"+titleguide+"</a><div class='general-hiking linkgg' style='width:auto !important;'>"+category+"</div> <div  style='position:relative;top:-42px;float:right;display:inline-block;margin-right:15px;text-align: right;color:#ffd63f'><img src ='https://land.travel/apiweb/img/star.png' title='Rank Tour'>"+avgrating+"<br><a class='linkgg linkreview' href='/tour-feedback?guide="+guide+"'>"+numratings+" reviews</a></div></div></div>";
+               jQuery("#toursexplore").append(output);
+                  }
+          i++;
+        }
+              jQuery("#toursexplore").on("scroll",function(){
+                  if(jQuery(this).scrollTop() + jQuery(this).innerHeight() >= jQuery(this)[0].scrollHeight) {alert('end reached');}
+                });
+      }else{
+          jQuery("#toursexplore").append("<p><p>");         
+      }   
+    }
+  });
+} 
+function reportGuide(id) 
+{
+    Swal.fire({
+      title: "Report Guide",
+      input: 'textarea',
+      text: 'Please write the motive behind the report',
+      inputValidator: (value) => {
+        if (!value || value == "") {
+          return " You need to give a motive for the report";
+        }
+      },
+      showCancelButton: true,
+      inputPlaceholder: 'Motive'
+    }).then((motive) => {
+        if (typeof motive.value != "undefined" && motive.value != "") 
+        {
+          jQuery.ajax({
+              url: "https://land.travel/apiweb/reportguide.php",
+              type: "post",
+              dataType: 'json',
+              data: {guide : id,motive: motive.value},
+              success: function(data) {
+                if (data.status == "OK") {
+                    Swal.fire({
+                      title: "Guide Reported",
+                      text: "The guide has been succesfully reported, please wait for the admins to review the report and perform the neccesary actions"
+                    });
+                  jQuery("#"+id).parent().parent().parent().remove();
+                }else {
+                    Swal.fire({
+                      title: "Something ocurred",
+                      text: "An error ocurred when making the report , please try again later",
+                      type: "error"
+                    });
+                }
+              },//fin del success
+              error: function() {
+                Swal.fire({
+                    title: "Something ocurred",
+                    text: "An error ocurred when making the report , please try again later",
+                    type: "error"
+                });
+              }//fin del error
+          });// fin del ajax
+        }// fin del if
+    });
+ }//fin de reportguide
+function searchGuidefollow()
+{
+  jQuery.ajax({
+      url: "https://land.travel/apiweb/guideoffollowin.php",
+      type: 'post',
+      dataType: 'json',
+      beforeSend: function()
+        {
+          jQuery("#followin").html("<div class='loader'></div>");
+        },
+      success:function(data)
+      {
+        jQuery("#followin").html("");
+        var t=data.results.length;
+        if (t>0)
+        {
+          guiasseguidores = data.results;
+          var i=0;
+          var countgui = (t<9)?t:9;
+          while (i < countgui) 
+          {
+            var guide     = data.results[i].id;
+            var titleguide=(data.results[i].title.length>21)?data.results[i].title.substring(0, 18)+"...":data.results[i].title;
+            var category  =   data.results[i].cattitle;  
+            var active    =   data.results[i].active;  
+            var image     = data.results[i].image1;
+            var cover     = (data.results[i].image_cover.substring(0,4) == "http")? data.results[i].image_cover: (validImage(data.results[i].image_cover,"cover"));   
+            var fav     = data.results[i].fav;
+            var favsrc    = '';
+            var userguide =   data.results[i].uid;
+            var price     = data.results[i].price;   
+            var avgrating=data.results[i].avgrating;
+                  var numratings=data.results[i].numratings;
+            var pricetext = ((data.results[i].price.trim()=="") ||  (parseFloat(data.results[i].price) <= 0))?"Free":"Paid";
+            var csr=data.results[i].avgcsr;
+            if (csr=="") {   csr="-";  }                             
+                      var usrurl = "https://land.travel/user-profile/?uid="+userguide+"&user="+userguide;
+            if (fav == 0) { favsrc='https://land.travel/apiweb/img/heart.png';}
+            else { favsrc='https://land.travel/apiweb/img/heart2.png'; }
+            var imagepro='';
+            var user_avatar=data.results[i].img_avatar;
+            imagepro = (user_avatar.substring(0,4) == "http")? user_avatar: (validImage(user_avatar,"avatar"));   
+                let output="<div class='card' style='margin-bottom:20px;height: 209px !important;margin-left: 9px !important;'><a href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"' class='image-placeholder' style='background-image: url("+cover+") !important;display:block;'><div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>"+pricetext+"</div><span href='#' style='position:absolute; top:5px;right:75px;'><!--<img id="+guide+" style='top:8px !important; margin-right: 15px;' src='"+favsrc+"' class='status_not_faved' onclick='favtour(this.id,this.src);return false;'>--></span><div id='bandera' style='/*display:inline-block;*/margin-left:auto; margin-right: 30px;background-image:url(https://land.travel/apiweb/img/bandera2.png);padding-left: 5px;padding-right: 5px;height: 60px;width: 55px;'><div align='center' style='color:#5d4037; padding-bottom:3px'><span>"+csr+"</span></br><span style='top: 0px;position: relative;'>SMESRS</span></div></div><div class='div-imagen'><div></div></div><div class='The-sun-also-rises'></div></a><div style='width:40px;height:40px;float:left;margin-left: 10px;margin-right: 10px;'><a href='"+usrurl+"'><img  style='width:40px;position:relative;border-radius:50%' src='"+imagepro+"'></a></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20'><a class='linkgg' id='"+guide+"linkg' style='color: #221f20;' href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"'>"+titleguide+"</a><div class='general-hiking linkgg' style='width:auto !important;' >"+category+"</div> <div  style='position:relative;top:-42px;float:right;display:inline-block;margin-right:15px;text-align: right;color:#ffd63f'><img src ='https://land.travel/apiweb/img/star.png' title='Rank Tour'>"+avgrating+"<br><a class='linkgg linkreview' href='/tour-feedback?guide="+guide+"'>"+numratings+" reviews</a></div></div></div>";
+              jQuery("#followin").append(output);
+              i++;
+              countgen++;
+          }
+        }
+        else
+          {
+              jQuery("#followin").append("<p>Not found guides<p>");
+          
+          }
+      }
+    });
+}
+function searchCreators(e,start)
+{
+    e.preventDefault();
+    var search=jQuery("#searchcreator").val().trim();  
+  if(start == 0)   
+  { jQuery("#pagefoot").html("");}
+    if ( search== '')
+     { 
+       Swal.fire({
+        type: 'error',
+        title: 'Oops...',
+        text: 'Field Required!'
+      })
+      return false;
+    }
+    var inicio = start;
+   jQuery.ajax({
+      url: "https://land.travel/apiweb/getcreators.php",
+      type: 'POST',
+      data: {input:search,start:inicio},
+      dataType: 'json',
+      beforeSend:function()
+      {         
+          jQuery("#creatorsid").html("<div class='loadercreator'></div>");
+      },
+      success:function(data)
+      {           
+         if(data.status=="OK")
+           {
+             var lista;
+             lista = '<ul class="myUL" id="myUL">';
+             for(i=0;i<data.results.length;i++)
+               {
+                 var avatar = data.results[i].img_avatar;
+                 if (avatar== ""){avatar='avatar.jpg';}
+                 avatar = (avatar.match(/^http:\/\/|^https:\/\//)=='http://' || avatar.match(/^http:\/\/|^https:\/\//)=='https://')?avatar:'https://staging.landtours.co/uploads/'+avatar;
+                 lista +='<li id="listfollo'+data.results[i].id+'"><a href="https://land.travel/user-profile/?uid='+data.results[i].id+'&user='+data.results[i].id+'"><span style="color:#cccccc">'+parseInt(inicio+i+1)+'</span>  <img class="imgUser" src="'+avatar+'"/>  '+data.results[i].firstname+' '+data.results[i].lastname+'</a></li>';
+               }
+             lista +='</ul>'; 
+             jQuery("#creatorsid").html(lista);
+             jQuery("#pagefoot").html(data[0]);
+           }
+         else
+           {
+             jQuery("#creatorsid").html("<p>Not found creators<p>")
+           }
+      }// fin sucess
+    });//fin ajax
+  
+}  
+function unfollowguide(id) 
+{
+  var nada="";
+    var useridg=0; 
+    var guide=id;
+  Swal.fire({
+          html:'<div>'+
+              '<!--<img src="https://land.travel/wp-content/uploads/2019/05/newguide.png"></img>-->'+
+              '<span style="font-weight:bold;font-size: 35px;">Unfollow this Guide</span>'+
+                        '<br /><span>Do you want to remove this guide from <br />your list?</span>'+
+              '</div>',
+          showCancelButton: true,
+          cancelButtonText: 'NO',
+          confirmButtonText: 'YES'
+      }).then((result) => {
+          if (result.value) {
+             jQuery.ajax({
+              url: "https://land.travel/apiweb/sessionwatch.php",
+              type: 'POST',
+              data: {nada:nada},
+              dataType: 'json',
+              async:false,
+              success:function(data)
+                {
+                 //alert(data); 
+                 useridg=data[0];
+                 //useridg=487; //usuario de sesion se coloco para pruebas
+                 //alert("useridg:"+useridg);
+                 console.log(useridg);
+                }
+            }); 
+              jQuery.ajax({
+              url: "https://land.travel/apiweb/unfollowguide.php",
+              type: 'GET',
+              data: {guide:guide,userid:useridg},
+              dataType: 'json',
+              success:function(data)
+              {
+                  Swal.fire({
+                  title: "Success!",
+                  text: "Guide removed from your list!",
+                  type: "success"
+                }).then(function() {
+                    window.location.href = 'https://land.travel/my-guides/';
+                }); 
+                      }
+            });
+        }
+      });
+} // fin de unfollowguide   
+function pageguidesfollow(start)
+{  
+  
+  var end = (parseInt(start+9)>guiasseguidores.length)?guiasseguidores.length:parseInt(start+9);
+  if(end <=guiasseguidores.length)
+  {
+  jQuery("#followin").append("<div id='loadauxiliar' class='loader'></div>");
+  for(let i =parseInt(start); i< parseInt(end); i++)
+  {
+    var guide     = guiasseguidores[i].id;
+    var titleguide=(guiasseguidores[i].title.length>21)?guiasseguidores[i].title.substring(0, 18)+"...":guiasseguidores[i].title;
+    var category  =   guiasseguidores[i].cattitle;  
+    var active    =   guiasseguidores[i].active;  
+    var image     = guiasseguidores[i].image1;
+    var cover     = (guiasseguidores[i].image_cover.substring(0,4) == "http")? guiasseguidores[i].image_cover: (validImage(guiasseguidores[i].image_cover,"cover"))
+    var fav     = guiasseguidores[i].fav;
+    var favsrc    = '';
+    var userguide =   guiasseguidores[i].uid;
+    var price     = guiasseguidores[i].price;   
+    var avgrating=guiasseguidores[i].avgrating;
+                  var numratings=guiasseguidores[i].numratings;
+    var pricetext = ((guiasseguidores[i].price.trim()=="") ||  (parseFloat(guiasseguidores[i].price) <= 0))?"Free":"Paid";
+    var csr=guiasseguidores[i].avgcsr;
+    if (csr=="") {   csr="-";  }                             
+    var usrurl = "https://land.travel/user-profile/?uid="+userguide+"&user="+userguide;
+    if (fav == 0) { favsrc='https://land.travel/apiweb/img/heart.png';} 
+    else { favsrc='https://land.travel/apiweb/img/heart2.png';  }
+    var imagepro='';
+    var user_avatar=guiasseguidores[i].img_avatar;
+    imagepro = (user_avatar.substring(0,4) == "http")? user_avatar: (validImage(user_avatar,"avatar"));   
+    let output="<div class='card' style='margin-bottom:20px;height: 209px !important;margin-left: 9px !important;'><a href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"' class='image-placeholder' style='background-image: url("+cover+") !important;display:block;'><div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>"+pricetext+"</div><span href='#' style='position:absolute; top:5px;right:75px;'><!--<img id="+guide+" style='top:8px !important; margin-right: 15px' src='"+favsrc+"' class='status_not_faved' onclick='favtour(this.id,this.src);return false;'>--></span><div id='bandera' style='/*display:inline-block;*/margin-left:auto; margin-right: 30px;background-image:url(https://land.travel/apiweb/img/bandera2.png);padding-left: 5px;padding-right: 5px;height: 60px;width: 55px;'><div align='center' style='color:#5d4037; padding-bottom:3px'><span>"+csr+"</span></br><span style='top: 0px;position: relative;'>SMESRS</span></div></div><div class='div-imagen'><div></div></div><div class='The-sun-also-rises'></div></a><div style='width:40px;height:40px;float:left;margin-left: 10px;margin-right: 10px;'><a href='"+usrurl+"'><img  style='width:40px;position:relative;border-radius:50%' src='"+imagepro+"'></a></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20'><a class='linkgg' id='"+guide+"linkg' style='color: #221f20;' href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"'>"+titleguide+"</a><div class='general-hiking linkgg' style='width:auto !important;' >"+category+"</div> <div  style='position:relative;top:-42px;float:right;display:inline-block;margin-right:15px;text-align: right;color:#ffd63f'><img src ='https://land.travel/apiweb/img/star.png' title='Rank Tour'>"+avgrating+"<br><a class='linkgg linkreview' href='/tour-feedback?guide="+guide+"'>"+numratings+" reviews</a></div></div></div>";
+    jQuery("#followin").append(output);
+    countgen++;
+  }
+  jQuery("#loadauxiliar").remove();
+  }
+  //console.log("countgen al salir: "+countgen);
+}
+jQuery(document).ready(function() {
+  var nada="";
+  var fav="";
+  jQuery.ajax({
+            url: "https://land.travel/apiweb/mytours.php",
+            type: 'GET',
+            data: {nada:nada},
+            dataType: 'json',
+            beforeSend: function()
+            {
+              jQuery("#tours").html("<div class='loader'></div>");
+            },
+        success:function(data)
+        {
+          jQuery("#tours").html("<a href='https://land.travel/create-guide/' class='card' id='card-create' style='margin-bottom:-20px; margin-top: 20px; height: 209px !important;margin-left: 9px !important; background-image:url(https://land.travel/wp-content/uploads/2019/07/create-guide-1.png);background-position: top center;border-radius:8px;'></a>");
+              var t=data.results.length;
+        if (t>0)
+        {
+          var i=0;
+          while (i < t) 
+          {
+            var guide=data.results[i].id;
+            var titleguide=(data.results[i].title.length>21)?data.results[i].title.substring(0, 18)+"...":data.results[i].title;
+            var description=data.results[i].description;
+            var category=data.results[i].cattitle;  
+            var active=data.results[i].active;  
+            var image=data.results[i].image1;
+            let numratings = data.results[i].numratings;
+                  var cover=(data.results[i].image_cover.substring(0,4) == "http")? data.results[i].image_cover:(validImage(data.results[i].image_cover,"cover"));   
+                  var fav=data.results[i].fav;
+                  var favsrc='';
+                  var userguide= data.results[i].uid;
+                  var price=data.results[i].price;   
+                  
+                  var pricetext = ((data.results[i].price.trim()=="") ||  (parseFloat(data.results[i].price) <= 0))?"Free":"Paid";
+                  var csr=data.results[i].avgcsr;
+            if (csr=="") {   csr="-";  }                             
+                      var usrurl = "https://land.travel/user-profile/";
+            //console.log(data);
+            if (fav == 0) {
+              favsrc='https://land.travel/apiweb/img/heart.png';
+            } else {
+              favsrc='https://land.travel/apiweb/img/heart2.png';
+            }
+                    var imagepro='';
+                    var user_avatar=data.results[i].img_avatar;
+                    imagepro = (user_avatar.substring(0,4) == "http")? user_avatar:(validImage(user_avatar,"avatar"));   
+                    /*
+                    jQuery.ajax({
+                      url: "https://land.travel/apiweb/datauser.php",
+                      type: 'POST',
+                      data: {user:userguide},
+                      dataType: 'json',
+                      async: false,
+                      beforeSend: function()
+                      {
+                        "<div class="loader"></div>";
+                      },
+                      success:function(data) {
+                        var user_avatar=data.results[0].img_avatar;
+                        imagepro = (user_avatar.substring(0,4) == "http")? user_avatar: "https://staging.landtours.co/uploads/" + (validImage(user_avatar));   
+                      }
+                    });  
+                    */
+                        let output="<div class='card' style='margin-bottom:20px;height: 209px !important;margin-left: 9px !important;'><a href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"' class='image-placeholder' style='background-image: url("+cover+") !important;display:block;'>";
+                    output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>"+pricetext+"</div>";
+              /*if (price==0) {
+              output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>Free</div>";
+            } else {
+              output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>Pay</div>";  
+            }*/
+                output+="<span href='#' style='position:absolute; top:5px;right:75px;'><img id="+guide+" style='top:8px !important; margin-right: 15px' src='"+favsrc+"' class='status_not_faved' onclick='favtour(this.id,this.src);return false;'></span><div id='bandera' style='/*display:inline-block;*/margin-left:auto; margin-right: 30px;background-image:url(https://land.travel/apiweb/img/bandera2.png);padding-left: 5px;padding-right: 5px;height: 60px;width: 55px;'><div align='center' style='color:#5d4037; padding-bottom:3px'>";
+              output+="<span>"+csr+"</span>";
+              output+="</br><span style='top: 0px;position: relative;'>SMESRS</span></div></div><div class='div-imagen'><div></div></div><div class='The-sun-also-rises'></div></a><div style='width:40px;height:40px;float:left;margin-left: 10px;margin-right: 10px;'><a href='"+usrurl+"'><img  style='width:40px;position:relative;border-radius:50%' src='"+imagepro+"'></a></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20'><div class='viewreview'><a class='linkgg' id='"+guide+"linkg' style='color: #221f20;' href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"'>"+titleguide+"</a><a class='linkgg linkreview' href='/tour-feedback?guide="+guide+"'>"+numratings+" reviews</a></div><div class='general-hiking linkgg' style='width:auto !important;' >"+category+"</div> <div  style='position:relative;top:-20px;float:right;display:inline-block;margin-right:15px'><a href='https://land.travel/edit-guide?guide="+guide+"'><div style='position: relative;background-color: #ffd740;left: -40px;border-radius: 50px !important;padding-left: 9px;padding-right: 9px;padding-top: 4px;padding-bottom: 4px;' ><img src ='https://land.travel/apiweb/img/menu_icon.png' title='Edit Guide'></div></a><img id='tourdel"+guide+"' onclick='deltour(this.id)' src ='https://land.travel/apiweb/img/delete.png' title='Delete Guide' style='top: -28px;position:relative' ></div></div></div>";
+              jQuery("#tours").append(output);
+              i++;
+          }
+        }
+        else
+          {
+              jQuery("#tours").append("<p><p>");
+          
+          }
+        }// fin del success
+      });// fin del ajax
+    jQuery.ajax({
+        url: "https://land.travel/apiweb/sessionwatch.php",
+        data: {nada: ""},
+        type: 'GET',
+        dataType: 'json',
+        success: function(sesion) {
+          jQuery.ajax({
+            url: "https://land.travel/apiweb/getguideao.php",
+            type: "GET",
+            data: {userid:sesion[0],owner: 0},
+            dataType: 'json',
+            beforeSend: function()
+            {
+              jQuery("#purchased").html("<div class='loader'></div>");
+            },
+            success: function(guides) {
+              //console.log("it loaded");
+              jQuery("#purchased").html("");
+              if (guides.results.length > 0) {
+                //console.log("\\nit entered the if omg");
+                for (let i = 0; i < guides.results.length; i++) 
+                {
+                  let cover=(guides.results[i].image_cover.substring(0,4) == "http")?guides.results[i].image_cover:(validImage(guides.results[i].image_cover,"cover"));
+                  let guide = guides.results[i].id;
+                  let fav = guides.results[i].fav;
+                  let favsrc = (fav == '1')? "https://land.travel/apiweb/img/heart2.png" : "https://land.travel/apiweb/img/heart.png";
+                  let userUrl = "https://land.travel/user-profile/?uid=" + guides.results[i].uid + "&user=" + guides.results[i].owner_name;
+                  let  imagepro=(guides.results[i].img_avatar.substring(0,4) == "http")?guides.results[i].img_avatar:(validImage(guides.results[i].img_avatar,"avatar"));
+                  let titleguide=(guides.results[i].title.length>21)?guides.results[i].title.substring(0, 18)+"...":guides.results[i].title;
+                  let category = guides.results[i].cattitle;
+                  let avgrating = guides.results[i].avgrating;
+                  let numratings = guides.results[i].numratings;
+                  let price=guides.results[i].price;
+                  var pricetext = ((guides.results[i].price.trim()=="") || (parseFloat(guides.results[i].price) <= 0) )?"Free":"Paid";
+                  let csr=guides.results[i].avgcsr;
+                  //alert("avgcsr"+csr);
+                  if (csr=="")
+                    {
+                      csr="-";
+                    }
+                  // alert("purchase price:"+price);
+                  let output="<div class='card' style='margin-bottom:20px;height: 209px !important;margin-left: 9px !important;width: 350px;'><a href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"'  class='image-placeholder' style='width:100%; background-image: url("+cover+") !important;position:relative;display:block;'>";
+                     output+="<div style='display:inline-block;position:absolute;top: 15px; left: 0;'class='free'>"+pricetext+"</div>"; 
+                  output+="<span style='position:absolute; top:5px;right:75px;'><img id="+guide+" style='top:8px !important; margin-right: 15px' src='"+favsrc+"' class='status_not_faved' onclick='favtour(this.id,this.src);return false;'></span>";                 
+                  output+="<div style='/*display:inline-block;*/margin-left:auto;/*margin-left: 15%;*/ margin-right: 30px;background-image:url(https://land.travel/apiweb/img/bandera2.png);padding-left: 5px;padding-right: 5px;height: 60px;width: 55px;'><div align='center' style='color:#5d4037; padding-bottom:3px'>"
+                  output+="<span>"+csr+"</span>";
+                  output+="</br><span style='top: 0px;position: relative;'>SMESRS</span></div></div><div class='div-imagen' style='top: -9px !important'><div><img src='https://land.travel/apiweb/img/3puntos.png'/></div><div class='desvanecer'><ul class='lista'><li class='listaguia'><span onclick='reportGuide("+guide+");return false;' style='color:#5d4037'>Report Guide</span></li>";
+                  if (price==0)
+                  {
+                      output+="<li class='listaguia'><span onclick='unfollowguide("+guide+");return false;' style='color:#5d4037'>Unfollow Guide</span></li>";
+                  } 
+                  output+="</ul></div></div><div class='The-sun-also-rises'></div></a><div style='width:40px;height:40px;float:left;margin-left: 10px;margin-right: 10px;'><a href='"+userUrl+"'><img  style='width:40px;position:relative;border-radius:50%' src='"+imagepro+"'></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20'><a class='linkgg' id='"+guide+"linkg' style='color: #221f20;' href='https://land.travel/guide-details/?guide="+guide+"&fav="+fav+"'>"+titleguide+"</a><div class='general-hiking linkgg' style='width:auto !important;'>"+category+"</div> <div  style='position:relative;top:-42px;float:right;display:inline-block;margin-right:15px;text-align: right;color:#ffd63f'><img src ='https://land.travel/apiweb/img/star.png' title='Rank Tour'>"+avgrating+"<br><a class='linkgg linkreview' href='/tour-feedback?guide="+guide+"'>"+numratings+" reviews</a></div></div></div>";
+                  jQuery("#purchased").append(output);
+                } //for
+              }//if
+              else{
+                jQuery("#purchased").html("Not guides found")
+              }
+            }//success
+          })//ajax getguideao
+        } 
+      })
+    searchGuidefollow()
+  //just on load first time
+    searchmyguides("default",0,"no");
+
+    //when a criterium changes
+  jQuery('#category').on('change', function()
+  {
+    var xchk=this.value;
+    searchmyguides("categories",xchk,"yes");
+    });  
+    jQuery('#filterfree').on('click', function()
+  {
+    searchmyguides("free",0,"yes");
+  });  
+    jQuery('#filterfav').on('click', function()
+  {
+      var xchk=0;
+      if(jQuery(this).is(":checked"))
+        {
+          xchk=1;
+        }
+      // alert(xchk);
+    searchmyguides("fav",xchk,"yes");
+  });  
+    jQuery('#searchterm').on('change', function()
+  {
+    var xchk=this.value;
+      searchmyguides("search",xchk,"yes");
+  });  
+    jQuery('#btnsearch').on('click', function()
+  {
+        var xchk = jQuery('#searchterm').val();
+    searchmyguides("search",xchk,"yes");
+  }); 
+  var gssgdrs=0;
+  jQuery(window).scroll(function(){
+    var windowTop = jQuery(document).scrollTop();
+    var windowBottom = windowTop + window.innerHeight;
+    var elementPositionTop = jQuery("#enddiv").offset().top;
+    var elementPositionBottom = elementPositionTop + jQuery("#enddiv").height();
+    /*console.log("el piso de la vantana: "+windowBottom);
+    console.log("el piso del elemento: "+elementPositionBottom);*/
+    if(typeof guiasseguidores ==='undefined')
+    {
+      gssgdrs =-1;
+    }
+    else
+    {
+      gssgdrs = guiasseguidores.length
+    }
+    if(windowBottom>=elementPositionBottom  && jQuery("#followin").css("display")=="block" && jQuery("#followin").html.length>0 && countgen<=gssgdrs)
+    {
+
+        pageguidesfollow(countgen);
+    }
+ 
+    });
+});//fin del ready
+</script>
+<style>
+ul{
+  padding: 0 0 23px 0em !important;
+}
+@media(max-width: 479px) {
+  #card-create {
+    margin-bottom: 15px !important;
+  }
+}
+@media only screen and (max-width: 600px) 
+{
+  .linkgg
+  {
+    font-size: x-small !important;
+  }  
+  .myUL li {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    align-self: center;
+    flex-direction: column; 
+  }   
+}
+@media only screen and (min-width: 600px) 
+{
+  .linkgg
+  {
+    font-size: x-small !important;
+  }   
+  .myUL li {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    align-self: center;
+    flex-direction:row; 
+
+  }   
+}
+@media only screen and (min-width: 768px) 
+{
+  .linkgg
+  {
+    font-size: small !important;
+  }   
+}
+@media only screen and (min-width: 992px)
+{
+  .linkgg
+  {
+    font-size: x-small !important;
+  }   
+}
+@media only screen and (min-width: 1200px) 
+{
+  .linkgg
+  {
+    font-size: inherit !important;
+  }   
+}  
+* {
+  box-sizing: border-box;
+}
+.imgUser
+  {
+    width: 40px;
+    height: 40px;
+    border-radius: 100%;
+  }
+.myInput {
+  background-image: url('https://land.travel/wp-content/uploads/2018/11/icon-search.png');
+  background-position: 10px 12px !important;
+  background-repeat: no-repeat;
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px !important;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+.myUL li a {
+  width:100%;
+  margin-top: -1px; /* Prevent double borders */
+  background-color: rgba(246,246,246,0.01);
+  padding: 6px;
+  text-decoration: none;
+  font-size: 18px;
+  color: black;
+  display: flex;
+  align-items: center;
+}
+
+.myUL li:hover:not(.header) {
+  background-color: #eee;
+}  
+.heightcont{
+  min-height: 260px;
+}
+.loader {
+  font-size: 10px;
+  margin: 50px auto;
+  text-indent: -9999em;
+  width: 11em;
+  height: 11em;
+  border-radius: 50%;
+  background: #000000;
+  background: -moz-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: -webkit-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: -o-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: -ms-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: linear-gradient(to right, #000000 10%, rgba(0,0,0, 0) 42%);
+  position: relative;
+  -webkit-animation: load3 1.4s infinite linear;
+  animation: load3 1.4s infinite linear;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.loader:before {
+  width: 50%;
+  height: 50%;
+  background: #000000;
+  border-radius: 100% 0 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+}
+.loader:after {
+  background: #eceff1;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  content: '';
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+.loadercreator {
+  font-size: 10px;
+  margin: 50px auto;
+  text-indent: -9999em;
+  width: 11em;
+  height: 11em;
+  border-radius: 50%;
+  background: #000000;
+  background: -moz-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: -webkit-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: -o-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: -ms-linear-gradient(left, #000000 10%, rgba(0,0,0, 0) 42%);
+  background: linear-gradient(to right, #000000 10%, rgba(0,0,0, 0) 42%);
+  position: relative;
+  -webkit-animation: load3 1.4s infinite linear;
+  animation: load3 1.4s infinite linear;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.loadercreator:before {
+  width: 50%;
+  height: 50%;
+  background: #000000;
+  border-radius: 100% 0 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+}
+.loadercreator:after {
+  background: #ffffff;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  content: '';
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+.contentInput
+{
+  margin-top: 0px!important;
+    margin-bottom: 0px!important;
+    padding-top: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    background-color: white;
+}
+.elementpage
+{
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 3px;
+    padding-right: 3px; 
+    border-radius: 50%;
+    color: white;
+    margin-left: 2px;
+    margin-right: 2px;    
+}
+.elementpageactive
+{
+  background-color: #ffd740;
+}
+.elementpageinactive
+{
+    background-color: #d9d9d9;
+}
+.linkreview
+{
+  color:#ffd63f;
+  text-decoration: none
+}
+.viewreview
+{
+  /*display: inline-flex;
+  justify-content: space-between;
+  width: 79%;*/
+      display: flex;
+    justify-content: space-between;
+    padding-right: 5px;
+}
+@-webkit-keyframes load3 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes load3 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+</style>
+    <div id="create"  class="heightcont">
+    <div id='tours'>
+      <a href='https://land.travel/create-guide/' class="card" id="card-create" style="margin-bottom:-20px; margin-top: 20px; height: 209px !important;margin-left: 9px !important; background-image:url(https://land.travel/wp-content/uploads/2019/07/create-guide-1.png);background-position: top center;border-radius:8px;"> 
+        </a>
+    </div>
+  </div>
+    <div id='toursexplore' style="display:none" class="heightcont"></div>
+    <div id="purchased" style="display:none;" class="heightcont"></div>
+    <div id="creator" style="display:none;" class="heightcont">
+      <div class='contentInput'>
+        <form onsubmit="return searchCreators(event,0);">
+          <!--<input type="text" class="myInput" id="myInput" data-ul="myUL" placeholder="Search for names.." title="Type in a name">-->
+        <div style=" height: 42px;border-radius: 4px;  background-color: #e4ecee;font-size:15px;width:100%;display: inline-flex;align-content: center;align-items: center;">
+            <img src="https://land.travel/wp-content/uploads/2018/11/icon-search.png"  style="height:25px;margin-left: 10px;cursor:pointer;" id="btnsearch" onclick="searchCreators(event,0);" >
+            <input type="text" value="" name="searchcreator" id="searchcreator" class="et_pb_s" placeholder=" Search by name creator" onkeyup="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);"  style="height: 42px;border-radius: 4px;background-color: #e4ecee;font-size:15px;border: none;width:inherit;">
+        </div>
+      </form>
+      
+       <div id='creatorsid'>
+        </div>
+        <div id='pagefoot' style='display: flex;justify-content: center;align-items: center;align-items: center;'></div>
+      </div>      
+    </div>
+  <div id="followin" style="display:none;" class="heightcont">
+
+  </div>
+<div id='enddiv'><p></p><p> </p></div>

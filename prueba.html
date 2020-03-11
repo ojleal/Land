@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/currencyformatter.js/2.2.0/currencyFormatter.min.js'></script>
+    <title>Prueba</title>
+    <link rel="stylesheet" href="">
+</head>
+
+<body>
+    <form action="prueba_submit" method="get" accept-charset="utf-8">
+        <div class='money'>
+            <input type="text" name="price">
+        </div>
+        <div class='money'> 8798458.11 </div>
+    </form>
+    <script>
+    OSREC.CurrencyFormatter.formatAll({
+        selector: '.money',
+        currency: 'USD'
+    });
+    
+    var dollarFormatterWithColor = OSREC.CurrencyFormatter.getFormatter({
+        currency: 'USD',
+        postFormatFunction: function(value, formattedValue) {
+            var textColor;
+            if (value < 0) { textColor = '#CC0000'; } else { textColor = '#00CC00'; }
+            return "<span style='color: " + textColor + "'>" + formattedValue + "</span>";
+        }
+    });
+
+    dollarFormatterWithColor(1234.56);
+    dollarFormatterWithColor(-9876.54);
+    </script>
+</body>
+
+</html>

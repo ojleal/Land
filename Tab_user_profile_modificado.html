@@ -1,0 +1,185 @@
+<style>
+  #guides{
+    padding:0px !important;
+  }
+  #followingsid{
+    display:none;
+        background: rgb(255, 255, 255);
+    font-family: "Black Han Sans", Helvetica, Arial, Lucida, sans-serif;
+    border-radius: 0px 0px 2px 2px;
+    overflow: hidden;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 12px 18px -6px;
+    padding: 10px 20px 20px !important;
+    margin-bottom: 0px !important;
+  }
+  #followersid{
+    display:none;
+        background: rgb(255, 255, 255);
+    font-family: "Black Han Sans", Helvetica, Arial, Lucida, sans-serif;
+    border-radius: 0px 0px 2px 2px;
+    overflow: hidden;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 12px 18px -6px;
+    padding: 10px 20px 20px !important;
+    margin-bottom: 0px !important;
+  }
+
+@media (min-width: 480px)
+{
+  .tab{
+        font-family: "Black Han Sans" !important;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        width: 80%;
+        padding-left: 2px;
+      }
+.row_tabs
+    {
+      background-color: TRANSPARENT;
+      display: flex;
+      justify-content: space-between !important;
+      align-items: center;
+      align-content: start;
+      flex-direction: column;
+      width: 100% !important;
+      margin-top: 5px;
+    } 
+}
+
+
+@media only screen and (max-width: 780px)
+{
+  .tab{
+        font-family: "Black Han Sans" !important;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        width: 99%;
+        padding-left: 2px;
+      }
+  .row_tabs
+    {
+      background-color: TRANSPARENT;
+      display: flex;
+      justify-content: space-between !important;
+      align-items: center;
+      align-content: start;
+      flex-direction: column;
+      width: 100% !important;
+      margin-top: 5px;
+    } 
+  }
+@media only screen and (min-width: 781px)
+{
+/* Style the tab */
+  .tab 
+    {
+      font-family: "Black Han Sans" !important;
+      overflow: hidden;
+      display:flex;
+      flex-direction:row;
+      justify-content:center;
+      width: 100%;
+      padding-left: 2px; 
+    }
+  .row_tabs
+    {
+      background-color: TRANSPARENT;
+      display: flex;
+      justify-content: space-between !important;
+      align-items: center;
+      align-content: start;
+      flex-direction: row;
+      width: 100% !important;
+      margin-top: 5px;
+    } 
+  }
+.tab button {
+  background-color: inherit;
+  float: left;
+  cursor: pointer; 
+  transition: 0.3s;
+  font-family: "Black Han Sans" !important;
+  font-size: 26px;
+  width: 100%;
+  padding: 0px 0px 0px;
+  border-bottom: none;
+  border: 0px!important;
+  opacity: 0.60;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: transparent;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+    opacity: 1;
+    background-color:transparent;
+    border-bottom: 5px solid #ffd740!important;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  -webkit-animation: fadeEffect 1s;
+  animation: fadeEffect 1s;
+}
+
+/* Fade in tabs */
+@-webkit-keyframes fadeEffect {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes fadeEffect {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+  
+</style>
+<script>
+  function openTabs(evt, TabName) 
+  {
+    var i, tabcontent, tablinks;
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    jQuery("#"+TabName).css('display','block');
+    //document.getElementByClassName(TabName).style.display = "block";
+    evt.currentTarget.className += " active";
+  }
+    jQuery(document).ready(function() {
+
+  jQuery("#etpbtab0").click(function() {
+      jQuery("#guides").show();
+    
+      jQuery("#followingsid").hide();
+      jQuery("#followersid").hide();
+    });
+    jQuery("#etpbtab1").click(function() {
+      jQuery("#guides").hide();
+      
+      jQuery("#followingsid").show();
+      jQuery("#followersid").hide();
+    });
+    jQuery("#etpbtab2").click(function() {
+      jQuery("#followersid").show();
+      
+      jQuery("#guides").hide();
+      jQuery("#followingsid").hide();
+    });      
+  });     
+</script>
+<div class="row_tabs">
+    <DIV class='tab'>
+      <div style="width: 10%;"></div>
+      <button id="etpbtab0" class="tablinks active" onclick="openTabs(event, 'guides')" style="font-family: 'Black Han Sans' !important;">GUIDES</button>
+      <button id="etpbtab1" class="tablinks" onclick="openTabs(event, 'followingsid')">FOLLOWING</button>
+      <button id="etpbtab2" class="tablinks" onclick="openTabs(event, 'followersid')">FOLLOWERS</button>
+      <div style="width: 10%;"></div>
+    </DIV>
+</div>

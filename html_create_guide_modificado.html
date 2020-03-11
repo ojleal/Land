@@ -1,0 +1,80 @@
+<div id="createGuide">
+    <form id="form" name="form" action="https://land.travel/apiweb/modtour.php" method="POST" enctype="multipart/form-data">
+        <div id="tourPublicText" class="text_changes_public" style="display: none !important">GUIDE IS PUBLIC CHANGES WILL GO LIVE</div>
+        <div class="divMain">
+            <div class="divLeft">
+                <label class="lbls lblTourtitle">Guide Title</label><br />
+                <input type="text" class="inpEditTour validate" required="required" data-validate="Tour Title" name="inpTourTitle" id="inpTourTitle" onchange="verificartitle(this.id);" onkeyup="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);"><br />
+                <label class="lbls ">Guide Description</label><br />
+                <div>
+                    <textarea class="txtAreaDesc validate" required="required" data-validate="Tour Description" id="inpTourDescription" name="inpTourDescription" maxlength="599" onkeydown="return textvalidate(this)" onkeyup="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);" style="resize: none"></textarea>
+                    <div id="conteo" class="styleconteo">599</div>
+                </div>
+                <label class='lbls lblLocation'>Location</label><br />
+                <input type='text' data-validate="Location" class="inpEditTour validate" name="inpTourLocation" id="inpTourLocation" required="required" onkeyup="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);" /><br />
+                <div class="selects-class">
+                    <select class="inpEditTourSelect validate" data-validate="Category" id="inpTourCategory" name="inpTourCategory">
+                    </select>
+                    <select name="inpTourLang" id="inpTourLang" class="inpEditTourSelect  validate" data-validate="Language" required>
+                        <option value="none" selected>Language</option>
+                        <option value="1">English</option>
+                        <option value="3">Spanish</option>
+                        <option value="4">French</option>
+                        <option value="5">Cree</option>
+                        <option value="6">Portuguese</option>
+                        <option value="7">Russian</option>
+                        <option value="8">Mandarin</option>
+                        <option value="9">Italian</option>
+                    </select>
+                </div>
+                <div class="divCont">
+                    <div class="divLeftT">
+                        <label class="containercheck Free-tour" for="inpTourFree">Free Guide
+                            <input type="checkbox" id="inpTourFree" name="inpTourFree" class="validate" data-check="1" onclick="showPrice();">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="containercheck checkfreetour Public-tour-will-be lbl-public-tour-will-be" for="inpTourPublic">Public Guide will be visible to everyone.
+                            <input type="checkbox" id="inpTourPublic" name="inpTourPublic" class="validate" onclick="showPublic();">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <div class="divRightT" id="divPrice">
+                        <!--Code with autonumeric.js-->
+                        <label class="lbls lblPrice" id="lblPrice">Price</label>
+                        <div style="display: inline-flex;width: 100%">
+                            <input class="inpEditPrice validate" type="text" name="inpTourPrice" id="inpTourPrice" data-type="currency"><br />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="divRight">
+                <div id="divImgCover" class="divImgCover">
+                    <div id="contentImageCover" style="height: 200px;padding: 3px;">
+                        <img src="../apiweb/img/images.jpg" id="imageCover" height="1px" width="1px">
+                    </div>
+                    <div style="width: auto !important;">
+                        <button type="button" onclick="avatarCrop(this.id)" id="btnAddCover" name="btnAddCover" class="btnlogin btnEditTourSaveSucces" style="margin-bottom: 10px;">COVER</button>
+                    </div>
+                </div>
+                <div style="height: 50%;justify-content: center !important; display: flex;flex-flow: column; align-content: center !important; align-items: center !important;padding: 3px;">
+                    <div class="scrollingphoto" id="scrollingphoto"></div>
+                    <div style="width: auto !important">
+                        <button type="button" onclick="avatarCrop(this.id)" id="btnAddImages" name="btnAddImages" class="btnlogin btnEditTourSaveSucces" style="margin-bottom: 10px;">ADD NEW IMAGES</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="padding-right: 40px;padding-left: 40px; width:100%;max-width: 100%;display:inline-flex;justify-content:center;">
+            <button type="button" onclick="editTour();" id="btnSaveGuide" class="btnlogin btnEditTourSaveSucces" style="margin-bottom: 10px;">SAVE GUIDE</button>
+            <button onclick="Ftcancel();" type="button" id="btnCancelGuide" class="btncancel btnEditTourSaveSucces" style="margin-bottom: 10px;">CANCEL</button>
+        </div>
+    </form>
+</div>
+<div id="locations">
+    <a class="card" id='add-loc' href="#" disabled='disabled' target="_blank" rel="noopener noreferrer">
+        <img src="https://land.travel/wp-content/uploads/2019/02/add-icon.png">
+        <p>
+            CREATE GUIDE
+        </p>
+    </a>
+</div>

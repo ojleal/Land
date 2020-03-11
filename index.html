@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prueba</title>
+    <meta name="description" content="Land">
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <meta name="google-signin-client_id" content="220655890530-mf9dkufsnsnt49djgl2rgtlahnsjf7k4.apps.googleusercontent.com">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
+    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
+    <style>
+    .g-signin2 {
+        width: 100%;
+    }
+
+    .g-signin2>div {
+        margin: 0 auto;
+    }
+
+    .center {
+        align-content: center;
+    }
+    </style>
+</head>
+
+<body>
+    <div class='center'>
+        <div id="my-signin2" class="g-signin2" data-onsuccess="onSignIn" data-theme="light" data-width="228" data-height="50" data-longtitle="true"></div>
+        <a href="#" onclick="signOut();">Sign out</a>
+    </div>
+    <script>
+    function init() {
+        gapi.load('auth2', function() {
+            auth2 = gapi.auth2.init({
+                client_id: '220655890530-mf9dkufsnsnt49djgl2rgtlahnsjf7k4.apps.googleusercontent.com',
+                // Scopes to request in addition to 'profile' and 'email'
+                //scope: 'additional_scope'
+            });
+        });
+    }
+
+    function onSuccess(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        var google_id = profile.getId();
+        var fullname = profile.getName();
+        var firstname = profile.getGivenName();
+        var lastname = profile.getFamilyName();
+        var imageUrl = profile.getImageUrl();
+        var email = profile.getEmail();
+        var id_token = googleUser.getAuthResponse().id_token; // The ID token you need to pass to your backend:
+        testApi();
+        // console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
+        // console.log("ID: " + profile.getId());
+        // console.log('Full Name: ' + profile.getName());
+        // console.log('Given Name: ' + profile.getGivenName());
+        // console.log('Family Name: ' + profile.getFamilyName());
+        // console.log("Image URL: " + profile.getImageUrl());
+        // console.log("Email: " + profile.getEmail());
+        // console.log("ID Token: " + id_token);
+        $.ajax({
+            type: 'POST',
+            data: { email: email, firstname: firstname, lastname: lastname, google_id: google_id, imageUrl: imageUrl, id_token: id_token },
+            url: 'google_register.php',
+            success: function(data) {
+                var validacion = data.results[0].id;
+                if (typeof validacion !== 'undefined') {
+                    //window.location.href = 'https://land.travel/user-profile/';
+                    console.log('te logueaste con estos datos: ' + data)
+
+                } else {
+                    jQuery('#load').hide();
+                    jQuery("#principal").append("<br>Invalid User");
+                }
+
+                jQuery('#load').hide();
+            }
+
+        });
+    }
+
+    function onFailure(error) {
+        console.log(error);
+    }
+
+    function renderButton() {
+        gapi.signin2.render('my-signin2', {
+            'scope': 'profile email',
+            'width': 228,
+            'height': 50,
+            'longtitle': true,
+            'theme': 'dark',
+            'onsuccess': onSuccess,
+            'onfailure': onFailure
+        });
+    }
+
+
+    function signOut() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function() {
+            console.log('User signed out.');
+        });
+    }
+    </script>
+</body>
+
+</html>

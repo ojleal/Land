@@ -1,0 +1,570 @@
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.1.0"></script>
+<script>
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var contadorimg = 1;
+var imageDataBase = ""
+var ImageCover = "";
+var ImagesDelete = "";
+var Guide = "";
+var FilesTour = new FormData();
+
+jQuery(document).ready(function() {
+    new AutoNumeric('#inpTourPrice', {
+        currencySymbol: ' $',
+        decimalCharacter: '.',
+        digitGroupSeparator: ',',
+        selectOnFocus: false,
+    });
+
+    //showPublic();
+    //jQuery(".et_pb_section_0").css("padding","54px 0 0 0 !important")
+    jQuery("#et_pb_tab_0").click(function() {
+        jQuery("#locations").hide();
+        jQuery("#createGuide").show();
+
+    });
+    jQuery("#et_pb_tab_1").click(function() {
+        jQuery("#locations").show();
+        jQuery("#createGuide").hide();
+
+    });
+    $.ajax({
+        url: 'https://land.travel/apiweb/getcategories.php',
+        data: FilesTour,
+        dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: "POST",
+        beforeSend: function() {
+
+        },
+        success: function(data) {
+            var optSelect;
+            optSelect = "<option value='none' selected>Category</option>";
+            for (i = 0; i < data.results.length; i++) {
+                optSelect += "<option value='" + data.results[i].id + "'>" + data.results[i].title + "</option>";
+            }
+            $("#inpTourCategory").html(optSelect);
+            console.log(data);
+        },
+        error: function(response) {}
+    });
+
+
+});
+
+function openTabs(evt, TabName) {
+    var i, tabcontent, tablinks;
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(TabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+/*************************************** CODIGO NUEVO 14-05-2019 **************************************/
+/*  function i'm allows displayed  the price field, if  field free-tour is are checked or not*/
+function money(evt, input) {
+    //var key   =   window.Event ? evt.which : evt.keyCode;    
+    var key = (evt.which) ? evt.which : evt.keyCode
+    var chark = String.fromCharCode(key);
+    var sth = "$" + document.getElementById(input).value;
+    var val = "";
+    if (sth == "$$." || sth == "$$" || sth == "$$.0" || sth == "$")
+        sth = "$" + chark;
+    if (key >= 48 && key <= 57) {
+        if (sth.length > 2) {
+            sth += ".";
+            for (i = 0; i < sth.length; i++) {
+                if (sth[i] != "." && sth[i] != "$") {
+                    val += sth[i];
+                }
+            }
+            var fin = val.substring(0, parseInt(val.length - 1)) + "." + val.substring(parseInt(val.length - 1), val.length);
+            document.getElementById(input).value = "$" + fin;
+        } else {
+            document.getElementById(input).value = sth.substring(0, 1);
+        }
+        return true;
+    } else {
+        if (key == 8) {
+            for (i = 0; i <= parseInt(sth.length - 1); i++) {
+                if (sth[i] != "." && sth[i] != "$") {
+                    val += sth[i];
+                }
+            }
+            var fin = val.substring(0, parseInt(val.length - 2)) + "." + val.substring(parseInt(val.length - 2), val.length);
+            document.getElementById(input).value = "$" + fin;
+            return true;
+        } else
+            return false;
+    }
+}
+
+function showPublic() {
+    if ($("#inpTourPublic").attr("data-check") == 0) {
+        $("#tourPublicText").css("display", "none");
+        $("#inpTourPublic").attr("data-check", "1");
+    } else {
+        $("#tourPublicText").css("display", "block");
+        $("#inpTourPublic").attr("data-check", "0");
+    }
+
+}
+
+function showPrice() {
+    if ($("#inpTourFree").attr("data-check") == 0) {
+        $("#inpTourPrice").addClass('validate');
+        $("#inpEditPrice").prop('disabled', true);
+        $("#inpTourPrice").css("display", "block");
+
+        $("#lblPrice").css("display", "block");
+        $("#divPrice").css("display", "block");
+        $("#inpTourFree").attr("data-check", "1");
+    } else {
+        $("#inpTourPrice").val(0);
+        $("#inpEditPrice").removeAttr('disabled');
+        $("#inpTourPrice").removeClass('validate');
+        $("#inpTourPrice").css("display", "none");
+        $("#lblPrice").css("display", "none");
+        $("#divPrice").css("display", "none");
+        $("#inpTourFree").attr("data-check", "0");
+    }
+
+}
+
+function soloNumeros(e) {
+    // capturamos la tecla pulsada
+    var teclaPulsada = window.event ? window.event.keyCode : e.which;
+
+    // capturamos el contenido del input
+    var valor = document.getElementById("inpTourPrice").value;
+
+    // 45 = tecla simbolo menos (-)
+    // Si el usuario pulsa la tecla menos, y no se ha pulsado anteriormente
+    // Modificamos el contenido del mismo añadiendo el simbolo menos al
+    // inicio
+    if (teclaPulsada == 45 && valor.indexOf("-") == -1) {
+        document.getElementById("inpTourPrice").value = "-" + valor;
+    }
+
+    // 13 = tecla enter
+    // 46 = tecla punto (.)
+    // Si el usuario pulsa la tecla enter o el punto y no hay ningun otro
+    // punto
+    if (teclaPulsada == 13 || (teclaPulsada == 46 && valor.indexOf(".") == -1)) {
+        return true;
+    }
+
+    // devolvemos true o false dependiendo de si es numerico o no
+    return /\d/.test(String.fromCharCode(teclaPulsada));
+}
+
+function deletePhoto(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        customClass: { confirmButton: 'btnlogin' },
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        preConfirm: () => {
+            if (jQuery("#setcoverPhoto" + jQuery("#" + id).attr('data-dlimg')).attr('data-isCover') == '1') {
+                Swal.fire('Warning', 'Before removing you must select another cover image', 'warning');
+
+                return false;
+            } else {
+                var countimg = 0;
+                var sons = jQuery("#scrollingphoto").find(".photonew");
+                sons.each(function() {
+                    imgs = jQuery(this).children('div').find('.imgEditTourr')
+                    imgs.each(function() {
+                        countimg++;
+                    })
+                })
+                if (countimg == 1) {
+                    Swal.fire('Warning', 'You should keep at least one image ', 'warning');
+                    return false;
+                } else
+                    return true;
+            }
+        }
+    }).then((result) => {
+
+        if (result.value) {
+            //console.log("Esta es la clave a buscar: "+"imgEditTour"+jQuery("#"+id).attr("data-dlimg"))
+            var clave = "imgEditTour" + jQuery("#" + id).attr("data-dlimg");
+            var url = jQuery("#imgEditTour" + jQuery("#" + id).attr("data-dlimg")).attr('src');
+            if (url.substring(0, url.indexOf("/")) != "data:image") {
+                ImagesDelete += jQuery("#imgEditTour" + jQuery("#" + id).attr("data-dlimg")).attr('src');
+                ImagesDelete += "|";
+            }
+            jQuery("#PhotoNew" + jQuery("#" + id).attr('data-dlimg')).remove();
+            if (FilesTour.get(clave) != "null")
+                FilesTour.delete(clave);
+            //console.log("Esta es la informacion de la clave indicadad: "+FilesTour.get(clave));
+            Swal.fire(
+                'Deleted!',
+                'Your file has been deleted.',
+                //'',
+                'success'
+            )
+        }
+    })
+}
+
+function setcoverPhoto(id) {
+    var sons = jQuery("#PhotoNew" + jQuery("#" + id).attr("data-stcover")).siblings('div').children('div').find(".is-cover");
+    sons.each(function() {
+        jQuery(this).removeClass('is-cover');
+        jQuery(this).addClass('set-as-cover');
+        jQuery(this).text("Set as cover");
+        jQuery(this).attr("data-isCover", "0");
+        jQuery("#imgEditTour" + jQuery(this).attr("data-stcover")).attr("data-iscover", "0");
+
+
+    })
+    jQuery("#" + id).addClass("is-cover");
+    jQuery("#" + id).text(" Cover ");
+    jQuery("#" + id).attr("data-isCover", "1");
+    jQuery("#imgEditTour" + jQuery("#" + id).attr("data-stcover")).attr("data-iscover", "1");
+
+}
+
+function avatarCrop(id) {
+    var crop = "";
+    var reader = new FileReader();
+
+    Swal.fire({
+        title: 'Add Picture',
+        html: "<div id='message-change' class='message-change'>Select a picture</div><div id='demo'></div><input type='file' style='display:none' id='avt-img'/><label for='avt-img' class='btnlogin btnprofile pointer' accept='image/png, image/jpg' >Select an image</label>",
+        onBeforeOpen: () => {
+            var demo = document.getElementById("demo");
+            var croppie = new Croppie(demo, {
+                viewport: { width: 300, height: 200 },
+                boundary: { width: 400, height: 300 },
+            });
+            jQuery(demo).hide();
+            document.getElementById("avt-img").onchange = function(e) {
+                var uploaded = this.value,
+                    ext = uploaded.substring(uploaded.lastIndexOf('.') + 1),
+                    ext = ext.toLowerCase(),
+                    fileName = uploaded.substring(uploaded.lastIndexOf("\\") + 1),
+                    accepted = ["jpg", "png", "gif", "jpeg"];
+                if (new RegExp(accepted.join("|")).test(ext)) {
+                    var id = "avt-img";
+                    var contenedor = "scrollphoto";
+                    var peso = 20000000;
+                    if (document.getElementById(id).files[0].size < peso) {
+                        inputAr = '#' + id
+                        var file = document.querySelector(inputAr).files[0];
+
+                        reader.onloadend = function(element) {
+                            croppie.bind({ url: reader.result });
+                            // croppie.result({type:'base64',size:{800,300}})
+                            crop = croppie;
+                            /*
+                            var acumulador = document.getElementById(contenedor).html;*/
+                            /*console.log(crop)
+                            contadorimg=contadorimg+1;*/
+                        }
+                        /* $
+                         if (file) {reader.readAsDataURL(file);}else {preview.src = "";}*/
+                        reader.readAsDataURL(e.target.files[0]);
+                        jQuery(demo).show();
+                        jQuery("#message-change").hide();
+                    } else {
+                        jQuery("#message-change").text("The file you want to upload exceeds the stipulated " + readableSize + " and can not be loaded");
+                        jQuery("#message-change").css("color", "#d85f4d");
+                        jQuery("#message-change").css("padding-top", "5%");
+                    }
+                } else {
+                    jQuery("#message-change").text("The file you want to upload is not an image, please check and try again");
+                    jQuery("#message-change").css("color", "#d85f4d");
+                    jQuery("#message-change").css("padding-top", "5%");
+                }
+            }
+        },
+        preConfirm: () => {
+            if (document.getElementById("avt-img").files.length == 0) {
+                jQuery("#message-change").text("You need to select a picture to upload");
+                jQuery("#message-change").css("color", "#d85f4d");
+                jQuery("#message-change").css("padding-top", "5%");
+                return false;
+            } else {
+                return crop;
+            }
+        }
+    }).then((imagine) => {
+        imagine.value.result({ type: 'base64', size: { width: 700, height: 500 } }).then((blob) => {
+            FilesTour.append('imgEditTour' + contadorimg, blob);
+
+            if (id == "btnAddImages") {
+                var temporal = '<DIV class="photonew" data-acountId="' + contadorimg + '" id="PhotoNew' + contadorimg + '">' +
+                    '<div style="display: inline-flex;">' +
+                    '<img src="" data-iscover="0" class="imgEditTourr" width="1" height="1" id="imgEditTour' + contadorimg + '">' +
+                    '<span class="closephoto pointer" data-dlimg="' + contadorimg + '" onclick="deletePhoto(this.id)" id="closer' + contadorimg + '"></span>' +
+                    /* 
+                     '<div class="set-as-cover rect-set-as-cover pointer" onclick="setcoverPhoto(this.id)" data-stcover="'+contadorimg+'" data-isCover="0" id="setcoverPhoto'+contadorimg+'">Set as cover</div>'+*/
+                    '</div>' +
+                    '</DIV>';
+                jQuery("#scrollingphoto").append(temporal)
+                jQuery("#imgEditTour" + contadorimg).attr('src', blob)
+                jQuery("#imgEditTour" + contadorimg).addClass("photonew");
+                jQuery("#closer" + contadorimg).addClass("closerphoto");
+                contadorimg++;
+            } else {
+                jQuery("#imageCover").attr('src', '');
+                jQuery("#imageCover").attr('src', blob);
+                jQuery("#divImgCover").css('backgroundImage', "url('" + blob + "')")
+            }
+        })
+    });
+}
+
+function editTour() {
+    var alerta = "Please complete the following fields:";
+    var boton = "";
+    var validar = 0;
+    $("#btnSaveGuide").prop('disabled', true);
+    $("#btnCancelGuide").prop('disabled', true);
+    $("#btnSaveGuide").text('PLEASE WAIT');
+    $("#btnSaveGuide").prepend("<i class='fa fa-spinner fa-pulse fa-spin'></i>  ");
+    $("#btnSaveGuide").removeClass("btnEditTourSaveSucces");
+    $("#btnSaveGuide").addClass("btnEditTourSaveWait");
+    alerta += "<ul>";
+    $(".validate").each(function() {
+        if ($(this).val().trim() == "" || $(this).val().trim() == "none" || $(this).val().trim() == "$" || $(this).val().trim() == "$.") {
+
+            if (boton == 'editar') {
+                if ($(this).attr('type') != 'file') {
+                    alerta += "<li>" + $(this).prev(".lbls").text() + " </li> ";
+                    validar++;
+                }
+            } else {
+                alerta += "<li>" + $(this).attr('data-validate') + " </li> ";
+                validar++;
+            }
+        }
+    });
+    if ($("#imageCover").attr('src') == "../apiweb/img/images.jpg") {
+        alerta += "<li> Image cover</li> ";
+        validar++;
+    }
+    if (contadorimg == 1) {
+        alerta += "<li> Image(s) guide</li> ";
+        validar++;
+    }
+    if ($("#inpTourDescription").val().trim().length < 10) {
+        alerta += "<li> Description should be longer than 10 Characters</li>";
+        validar++;
+    }
+
+    if (validar > 0) {
+        alerta += "</ul>";
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            html: alerta
+
+        })
+        $("#btnSaveGuide").removeAttr('disabled').text("SAVE GUIDE");
+        $("#btnSaveGuide").removeClass("btnEditTourSaveWait");
+        $("#btnSaveGuide").addClass("btnEditTourSaveSucces");
+    } else {
+        var imagesEdit = "";
+        var imagesSaveEdit = "";
+        var coverimage = "";
+        var sons = jQuery("#scrollingphoto").find(".photonew");
+        sons.each(function() {
+            imgs = jQuery(this).children('div').find('.imgEditTourr')
+
+            imgs.each(function() {
+                //console.log("este es un id: "+jQuery(this).attr('id'));
+                url = jQuery(this).attr('src');
+                if (url.substring(0, url.indexOf("/")) != "data:image") {
+                    if (jQuery(this).attr("data-iscover") == "1")
+                        coverimage = jQuery(this).attr('src').substring(parseInt(url.lastIndexOf("/") + 1), url.length);
+
+                    imagesSaveEdit += url.substring(parseInt(url.lastIndexOf("/") + 1), url.length);
+                    imagesSaveEdit += "|";
+                } else {
+                    imagesEdit += jQuery(this).attr('id');
+                    imagesEdit += "|";
+                    if (jQuery(this).attr("data-iscover") == "1")
+                        coverimage = jQuery(this).attr('id');
+
+                    imagesSaveEdit += jQuery(this).attr('id');
+                    imagesSaveEdit += "|";
+                }
+            })
+        })
+        imagesEdit = imagesEdit.substring(0, imagesEdit.length);
+        //console.log("Esta es la imagen de cubierta: "+coverimage);
+        //console.log("Aqui estas son las imagenes: "+imagesSaveEdit+" estas son las que estaban en la base de datos: "+imageDataBase);
+        var dataSend = new FormData(document.getElementById('form'));
+        //dataSend.append("ImagesDelete",ImagesDelete);
+        FilesTour.append("IdImagesNew", imagesEdit);
+        FilesTour.append("ImagesDelete", ImagesDelete);
+        /*
+        if(ImageCover != coverimage)
+            FilesTour.append('NewCover',coverimage);
+        else
+            FilesTour.append('NewCover',ImageCover);  */
+        FilesTour.append('NewCover', jQuery("#imageCover").attr('src'));
+        FilesTour.append('NewsImages', imagesSaveEdit)
+        FilesTour.append("inpTourLocation", jQuery("#inpTourLocation").val());
+        FilesTour.append("inpTourCategory", jQuery("#inpTourCategory").val());
+        FilesTour.append("inpTourTitle", jQuery("#inpTourTitle").val());
+        FilesTour.append("inpTourType", jQuery("#inpTourType").val());
+        FilesTour.append("inpTourDescriptione", jQuery("#inpTourDescription").val());
+        FilesTour.append("inpTourFree", (jQuery("#inpTourFree").attr('checked') == "checked") ? 1 : 0);
+        FilesTour.append("inpTourPublic", (jQuery("#inpTourPublic").attr('checked') == "checked") ? 1 : 0)
+        var vls = (jQuery("#inpTourPrice").val().substring(0, 2) == "$.") ? "0." + jQuery("#inpTourPrice").val().substring(2) : jQuery("#inpTourPrice").val().substring(1);
+        FilesTour.append("inpTourPrice", vls);
+        FilesTour.append("inpTourLang", jQuery("#inpTourLang").val());
+        FilesTour.append("Guide", Guide);
+
+        //}
+        var boton = "enviar";
+        $.ajax({
+            url: 'https://land.travel/apiweb/backcreatetour.php',
+            //url:'https://land.travel/apiweb/verifydeal.php',
+            data: FilesTour,
+            dataType: 'json',
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: "POST",
+            beforeSend: function() {
+
+            },
+            success: function(data) {
+                //if(data.estado=="fine")
+                if (data.status == "OK") {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Great',
+                        showCancelButton: true,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Yes',
+                        cancelButtonText: 'No',
+                        html: "<h1>The guide has been created correctly. Do you wish to add a location to it?</h1>"
+                        //html:"<h1>The guide has been created correctly. Do you wish to add a location to it?</h1><br><a href='https://land.travel/create-location/?guide="+data.results.id+"' class='btnlogin'>Yes</a>    <a class='btncancel' href='https://land.travel/my-guides/'>No</a>"
+
+                    }).then((result) => {
+                        if (Swal.DismissReason.backdrop) {
+                            window.location.reload(true);
+                        }
+                        if (result.value) {
+                            window.location.href = 'https://land.travel/create-location/?guide=' + data.results.id;
+                        } else {
+                            window.location.href = 'https://land.travel/my-guides/';
+                        }
+                    })
+                    $("#btnSaveGuide").removeAttr('disabled').text("SAVE GUIDE");
+                    $("#btnSaveGuide").removeClass("btnEditTourSaveWait");
+                    $("#btnSaveGuide").addClass("btnEditTourSaveSucces");
+                    $("#btnCancelGuide").removeAttr('disabled');
+                } else {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Error',
+                        text: 'An error occurred with the request. Try again later. If the error persists, contact the site administrator.' + data.status
+                    })
+                    $("#btnSaveGuide").removeAttr('disabled').text("SAVE GUIDE");
+                    $("#btnSaveGuide").removeClass("btnEditTourSaveWait");
+                    $("#btnSaveGuide").addClass("btnEditTourSaveSucces");
+                    $("#btnCancelGuide").removeAttr('disabled');
+                }
+
+            },
+            error: function(response) {
+                if (response.status != "OK") {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Error',
+                        text: 'An error occurred with the request. Try again later. If the error persists, contact the site administrator.' + response.status
+                    })
+                }
+                if (response.status == "OK") {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Great',
+                        showCancelButton: true,
+                        showConfirmButton: true,
+                        html: "<h1>The guide has been created correctly. Do you wish to add a location to it?</h1><br><a href='https://land.travel/create-location/?guide=" + response.results.id + "' class='btnlogin'>Yes</a>    <a class='btncancel' href='https://land.travel/my-guides/'>No</a>"
+
+                    })
+                    // $("#add-loc").attr("href","https://land.travel/create-location/?guide="+ data.guide);
+                } else {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Error',
+                        text: 'An error ocurred with the request, please try again later'
+                    })
+                }
+                $("#btnSaveGuide").removeAttr('disabled').text("SAVE GUIDE");
+                $("#btnSaveGuide").removeClass("btnEditTourSaveWait");
+                $("#btnSaveGuide").addClass("btnEditTourSaveSucces");
+                $("#btnCancelGuide").removeAttr('disabled');
+
+
+            }
+        })
+    }
+
+}
+
+function textvalidate(texto) {
+    var maxText = 599;
+    if (texto.value.length > 599) {
+        return false;
+    } else {
+
+        jQuery("#conteo").text(parseInt(maxText) - texto.value.length);
+    }
+}
+
+function Ftcancel() {
+    document.getElementById('form').action = "https://land.travel/my-guides/";
+    document.getElementById('form').submit();
+}
+
+function verificartitle(id) {
+    var title = jQuery("#" + id).val();
+    $.ajax({
+        url: 'https://land.travel/apiweb/verifytitleguide.php',
+        type: "POST",
+        async: false,
+        dataType: 'json',
+        data: { 'title': title },
+        beforeSend: function() {
+            //jQuery("#errortitle").prepend(" <i class='fa fa-spinner fa-pulse fa-spin'></i>")       
+        },
+        success: function(response) {
+            if (response.exists == "YES") {
+                jQuery("#" + id).val('');
+                jQuery("#" + id).attr("placeholder", "The title of the guide already exist, please try another one");
+                //prepend("<span class='errortitle'>The title of the guide already exist, please try another one</span>")
+
+            }
+
+        },
+        error: function(data) {
+            alert("An error occured: " + data);
+
+        }
+    });
+
+
+}
+</script>

@@ -1,0 +1,82 @@
+<div id="createGuide">
+    <form id="form" action="https://land.travel/apiweb/modtour.php" enctype="multipart/form-data" method="POST" name="form">
+        <div class="divMain">
+            <div class="divLeft">
+                <label class="lbls lblTourtitle">Guide Title</label>
+                <input id="inpTourTitle" class="inpEditTour validate" name="inpTourTitle" required="required" type="text" data-validate="Guide Title" disabled="disabled">
+                <label class="lbls ">Guide Description</label>
+                <div>
+                    <textarea class="txtAreaDesc validate" required="required" data-validate="Tour Description" id="inpTourDescription" name="inpTourDescription" maxlength="599" onkeydown="return textvalidate(this)" style="resize: none" onkeyup="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);"></textarea>
+                    <div id="conteo" class="styleconteo">599</div>
+                </div>
+            </div>
+            <div class="divRight">
+                <label class="lbls lblLocation">Location</label>
+                <input id="inpTourLocation" class="inpEditTour validate" name="inpTourLocation" required="required" type="text" data-validate="Location" onkeyup="this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);">
+                <!--
+                <label class="lbls lblType">Tags</label>
+                <input id="inpTourTags" class="inpEditTour validate" name="inpTourTags" type="text" data-validate="Tags" />
+                -->
+                <label class="lbls lblCategory">Category</label>
+                <select id="inpTourCategory" class="inpEditTour validate" name="inpTourCategory" data-validate="Category">
+                    <option value='none'>Select</option>
+                </select>
+            </div>
+        </div>
+        <div class="divCont">
+            <div class="divLeftT">
+             <label id="lblPrice" class="lbls">Price</label>
+             <input type="text" class="inpEditPrice" name="inpTourPrice" id="inpTourPrice" min="0" onkeydown="return money(event,this.id);"><br/> <!--pattern="^(\d|-)?(\d|,)*\.?\d*$"><br/>-->
+            </div>
+            <div class="divRightT">
+                <label class="lbls ">Language</label>
+                <select id="inpTourLang" class="inpEditTour" name="inpTourLang" required="">
+                    <option selected="selected" value="1">English</option>
+                    <option value="3">Spanish</option>
+                    <option value="4">French</option>
+                    <option value="5">Cree</option>
+                    <option value="6">Portuguese</option>
+                    <option value="7">Russian</option>
+                    <option value="8">Mandarin</option>
+                    <option value="9">Italian</option>
+                </select>
+            </div>  
+        </div>
+        <div class="divCont">
+            <div class="divLeftT">
+                <label class="containercheck" for="inpTourFree">Free Guide
+                <input id="inpTourFree" class="validate" name="inpTourFree" type="checkbox" onclick='showPrice();' data-check='1'> <!-- is Commented why no needing in this moment onclick="showPrice();" >-->
+                <span class="checkmark"></span>
+                </label>
+            </div>
+            <div class="divRightT">
+                <label class="containercheck checkfreetour Public-tour-will-be lbl-public-tour-will-be" for="inpTourPublic">Public Guide will be visible to everyone.
+                <input id="inpTourPublic" class="validate" name="inpTourPublic" type="checkbox">
+                <span class="checkmark"></span>
+                </label> 
+            </div>
+        </div>
+
+        <div class="scrollphoto" id="scrollphoto"> 
+            <div class="photo">
+                <span class="add-photo" onclick="avatarCrop()"></span>
+                <br>
+                <span class="AddImage">ADD IMAGE</span>
+            </div>      
+            <div class="scrollingphoto" id="scrollingphoto">
+            </div>    
+        </div>
+        <div style="width: 100%; max-width: 100%; display: inline-flex; justify-content: center; padding-top: 40px;">
+            <button type="button" onclick="editTour();" id="btnEditTourSave" class="btnlogin btnEditTourSaveSucces" style="margin-bottom: 10px;">EDIT GUIDE</button>   
+            <button id="cancel" type="button" class="btncancel" onclick="javascript:window.location.href='https://land.travel/my-guides/'">CANCEL</button>
+        </div>
+    </form>
+</div>
+
+<div id="locations" style="padding: 15px">
+    <div class="card et_pb_column et_pb_column_1_2" style="background-color: #ffd740;height: 200px !important;justify-content:center;display: flex;border-radius: 4px;align-content: center;align-items: center;   flex-direction: column;margin-bottom:20px;margin-right:2% !important;margin-left:0px !important;height: 222px !important;position:relative;">
+        <a id="locatecreate"><span class="add-photo"></span></a>
+        <br>
+        <span class="AddImage">ADD LOCATION</span>
+    </div>  
+</div>

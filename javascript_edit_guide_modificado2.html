@@ -1,0 +1,1376 @@
+<script>
+var deal;
+var windowOpenClose = 0;
+
+function openTabs(evt, TabName) {
+    var i, tabcontent, tablinks;
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(TabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+function money(evt, input) {
+    //var key   =   window.Event ? evt.which : evt.keyCode;    
+    var key = (evt.which) ? evt.which : evt.keyCode
+    var chark = String.fromCharCode(key);
+    var sth = "$" + document.getElementById(input).value;
+    var val = "";
+    if (sth == "$$." || sth == "$$" || sth == "$$.0" || sth == "$")
+        sth = "$" + chark;
+    if (key >= 48 && key <= 57) || (key >= 96 && key <= 105) {
+        if (sth.length > 2) {
+            sth += ".";
+            for (i = 0; i < sth.length; i++) {
+                if (sth[i] != "." && sth[i] != "$") {
+                    val += sth[i];
+                }
+            }
+            var fin = val.substring(0, parseInt(val.length - 1)) + "." + val.substring(parseInt(val.length - 1), val.length);
+            document.getElementById(input).value = "$" + fin;
+        } else {
+            document.getElementById(input).value = sth.substring(0, 1);
+        }
+        return true;
+    } else {
+        if (key == 8) {
+            for (i = 0; i <= parseInt(sth.length - 1); i++) {
+                if (sth[i] != "." && sth[i] != "$") {
+                    val += sth[i];
+                }
+            }
+            var fin = val.substring(0, parseInt(val.length - 2)) + "." + val.substring(parseInt(val.length - 2), val.length);
+            document.getElementById(input).value = "$" + fin;
+            return true;
+        } else
+            return false;
+    }
+}
+
+function soloNumerosDl(e, id) {
+    // capturamos la tecla pulsada
+    var teclaPulsada = window.event ? window.event.keyCode : e.which;
+    // capturamos el contenido del input
+    var valor = document.getElementById(id).value;
+    // 45 = tecla simbolo menos (-)
+    // Si el usuario pulsa la tecla menos, y no se ha pulsado anteriormente
+    // Modificamos el contenido del mismo añadiendo el simbolo menos al
+    // inicio
+    if (teclaPulsada == 45 && valor.indexOf("-") == -1) {
+        document.getElementById(id).value = "-" + valor;
+    } else {
+        if (valor.indexOf("-") == -1)
+            document.getElementById(id).value = "$" + valor.slice(0);
+        if (valor.indexOf("-$") == -1)
+            document.getElementById(id).value = "$" + valor.slice(1);
+    }
+    // 13 = tecla enter
+    // 46 = tecla punto (.)
+    // Si el usuario pulsa la tecla enter o el punto y no hay ningun otro
+    // punto
+    if (teclaPulsada == 13 || (teclaPulsada == 46 && valor.indexOf(".") == -1)) {
+        return true;
+    }
+    // devolvemos true o false dependiendo de si es numerico o no
+    return /\d/.test(+String.fromCharCode(teclaPulsada));
+}
+
+function soloNumerosInt(e, id) {
+    // capturamos la tecla pulsada
+    var teclaPulsada = window.event ? window.event.keyCode : e.which;
+    // capturamos el contenido del input
+    var valor = document.getElementById(id).value;
+    // 45 = tecla simbolo menos (-)
+    // Si el usuario pulsa la tecla menos, y no se ha pulsado anteriormente
+    // Modificamos el contenido del mismo añadiendo el simbolo menos al
+    // inicio
+
+    // 13 = tecla enter
+    // 46 = tecla punto (.)
+    // Si el usuario pulsa la tecla enter o el punto y no hay ningun otro
+    // punto
+    if (teclaPulsada == 13) {
+        return true;
+    }
+    // devolvemos true o false dependiendo de si es numerico o no
+    return /\d/.test(+String.fromCharCode(teclaPulsada));
+}
+
+function showCouponsAmt() {
+    if ($("#coupons").attr("checked") == "checked") {
+
+        $("#cant-coupons").addClass("couponsDisabled");
+        $("#cant-coupons").prop('disabled', true);
+        $("#cant-coupons").val("");
+        $("#coupons").attr("data-check", "1");
+        $("#cant-coupons").removeClass('validate');
+    } else {
+        $("#cant-coupons").addClass('validate');
+        $("#cant-coupons").removeClass("couponsDisabled");
+        $("#cant-coupons").removeAttr('disabled');
+        $("#coupons").attr("data-check", "0");
+    }
+}
+
+function diffFechas(begin, final) {
+    var dateBeg = new Date(begin).getTime();
+    var dateFin = new Date(final).getTime();
+    var diff = parseFloat(parseFloat(dateFin) - parseFloat(dateBeg));
+    return (parseFloat(diff) / (1000 * 60 * 60 * 24));
+}
+
+function persistente(dato) {
+    var datos = dato;
+    var dealctive;
+    if (datos != "stop") {
+        $.ajax({
+            url: 'https://land.travel/apiweb/querydeal.php',
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            data: { 'locationId': datos },
+            beforeSend: function() {},
+            success: function(data) {
+                dealctive = data.results[0].active;
+                if (dealctive == 1) {
+                    jQuery("#qr").removeClass("dealNoConfirmed");
+                    jQuery("#qr").removeClass("dealForConfirmed");
+                    jQuery("#qr").addClass("dealConfirmed");
+                }
+            },
+            error: function(data) {
+                //console.log('ocurrio un error');
+                dealctive = 1;
+            }
+        });
+        if (dealctive != 1 && dealctive != 0 && Swal.isVisible()) {
+            setTimeout(20000);
+            persistente(datos);
+        }
+    }
+
+}
+
+function validateData(loc, csr, dealid) {
+    //console.log("se recibieron el loc y el csr: "+loc+"  "+csr+"   "+dealid);
+    let datos = {
+        desc: jQuery("#dealDes").val(),
+        expire: jQuery("#dealExpire").val(),
+        unlimited: (jQuery("#coupons").attr('checked') == "checked") ? 1 : 0,
+        cant: jQuery("#cant-coupons").val(),
+        value: jQuery("#value").val(),
+        comision: jQuery("#comision").val(),
+        location: loc,
+        csr: csr,
+        dealid: dealid
+    };
+    let retorno = 0;
+
+    jQuery(".swal2-confirm").prop('disabled', true);
+    jQuery(".swal2-confirm").text('PLEASE WAIT');
+    jQuery(".swal2-confirm").prepend("<i class='fa fa-spinner fa-pulse fa-spin'></i>  ");
+    jQuery(".swal2-confirm").removeClass("btnEditTourSaveSucces");
+    jQuery(".swal2-confirm").addClass("btnEditTourSaveWait");
+    $.ajax({
+        url: (dealid != 'none') ? 'https://land.travel/apiweb/updatedeal.php' : 'https://land.travel/apiweb/regdeal.php',
+        data: datos,
+        dataType: 'json',
+        type: "POST",
+        beforeSend: function() {
+
+        },
+        success: function(data) {
+            jQuery(".swal2-confirm").removeAttr('disabled');
+            jQuery(".swal2-confirm").text('Generate QR code');
+            jQuery(".swal2-confirm").addClass("btnEditTourSaveSucces");
+            jQuery(".swal2-confirm").removeClass("btnEditTourSaveWait");
+            jQuery(".swal2-confirm").hide();
+            jQuery("#qr").removeClass("dealNoConfirmed");
+            jQuery("#qr").html("<span class='deal dealForConfirmed'>DEAL FOR CONFIRM</span>");
+            jQuery("#qr").css({ "display": "flex", "justify-content": "center" });
+            /*jQuery("#qr").removeClass("dealForConfirmed");
+            jQuery("#qr").addClass("dealForConfirmed");*/
+            var boton = "<br><button type='button' class='btnlogin' id='generate' onclick='javascript:swal.close();'>Continue</button>";
+            jQuery("#alerta").removeClass("alerta");
+            jQuery('#alerta').css('display', 'block');
+            jQuery("#alerta").html("<img src='../apiweb/temp/" + data.imageQR + "'/><br>" + boton);
+            jQuery("#message-action").text('');
+            jQuery("#message-action").text('Let affiliate scan code to create a deal');
+            retorno = 1;
+            // persistente(loc);
+        },
+        error: function(response) {
+            retorno = 0;
+            /*if(response.status!=200)
+            {*/
+            Swal.fire({
+                type: 'error',
+                title: 'Error',
+                text: 'An error ocurred with the request, please try again later'
+            })
+            /*}
+                                            if(response.status==200)
+                                            {
+                                                 Swal.fire({
+                                                        type: 'success',
+                                                        title: 'Great',
+                                                        text:  'Very well, the guide has are edited correctly.'
+                                                      })
+                                            }  
+                      */
+        }
+    })
+}
+
+function createDeal(loc, csr) {
+    var LOCATION = loc;
+    var CSR = csr;
+    var DEALID = 'none';
+    //console.log("estos son los datos que recibí: "+LOCATION+" Y EL CSR: "+CSR);
+    var deal = new Object();
+    var form = "";
+    $.ajax({
+        url: 'https://land.travel/apiweb/querydeal.php',
+        data: { 'locationId': loc },
+        dataType: 'json',
+        async: false,
+        /*cache: false,
+        contentType: false,
+        processData: false,*/
+        type: "POST",
+        beforeSend: function() {
+
+        },
+        success: function(data) {
+            if (data.status == "OK") {
+                deal = { "status": "find", "id": data.results[0].id, "description": data.results[0].description, "csr": data.results[0].csr, "numCoupons": data.results[0].numCoupons, "locationId": data.results[0].locationId, "paypalEmail": data.results[0].paypalEmail, "active": data.results[0].active, "redeemed": data.results[0].redeemed, "commission": data.results[0].commission, "value": data.results[0].value, "expiry": data.results[0].expiry, "dateadded": data.results[0].dateadded, "uid": data.results[0].uid, "image": data.results[0].image };
+            } else {
+                deal = { 'status': 'no find', 'active': "0" };
+            }
+
+        }
+    })
+    let alerta = "Please fill the following field";
+    let validar = 0;
+    if (deal.status != 'no find') {
+        DEALID = deal.id;
+        var description = deal.description;
+        var imageRQ = deal.image;
+        var csr = deal.csr;
+        var numCoupons = deal.numCoupons;
+        var locationId = deal.locationId;
+        var paypalEmail = deal.paypalEmail;
+        var active = deal.active;
+        var redeemed = deal.redeemed;
+        var commission = deal.commission;
+        var value = deal.value;
+        var expiry = deal.expiry;
+        var dateadded = deal.dateadded;
+        var uid = deal.uid;
+        var days = diffFechas(dateadded, expiry);
+    }
+    //console.log("Valores necesarios para activar el boton: "+deal.status+", ("+deal.active+")  y esta es la imagen: "+imageRQ);
+    if (deal.status != 'no find' && deal.active == "1") {
+        form = "<form style='text-align:left;margin-bottom:10px;'>" +
+            "<label for='dealDes' class='lbls'>Description</label><br/>" +
+            "<textarea id='dealDes' class='txtAreaDesc validate couponsDisabled' style='margin-bottom:10px !important;height:70px;resize:none' data-validate='Description'>" + description + "</textarea>" +
+            "<div>" +
+            "<label for='dealExpire' class='lbls'>Expire date</label><br/>" +
+            "<div class=''><select class='validate couponsDisabled' id='dealExpire' name='dealExpire' data-validate='Expire date'>" +
+            "<option value='none'>Select</option>" +
+            "<option value='1' " + ((days == 1) ? "selected='selected'" : "") + "> One day</option>" +
+            "<option value='2' " + ((days == 2) ? "selected='selected'" : "") + "> Two days</option>" +
+            "<option value='5' " + ((days == 5) ? "selected='selected'" : "") + "> Five days</option>" +
+            "<option value='10' " + ((days == 10) ? "selected='selected'" : "") + "> Ten days</option>" +
+            "<option value='15' " + ((days == 15) ? "selected='selected'" : "") + "> Fifteen days</option>" +
+            "<option value='20' " + ((days == 20) ? "selected='selected'" : "") + "> Twenty days</option>" +
+            "<option value='25' " + ((days == 25) ? "selected='selected'" : "") + "> Twenty-five days</option>" +
+            "<option value='30' " + ((days == 30) ? "selected='selected'" : "") + "> Thirty days</option>" +
+            "</select></div>"
+            /*
+                "<div class='inpDate'>"
+                  "<input type='date' id='dealExpire' name='dealExpire' style='width:100%;' class='alignInpNumbRight validate' data-validate='Expire date'><label for='dealExpire'><i class='fas fa-calendar-day fa-flip-horizontal' style='marging-right: 20px;'></i></label>"
+                "</div>"
+               */
+            +
+            "</div>" +
+            "<div class='row'>" +
+            "<div class='col'>" +
+            "<div style='height:25px;'></div><label class='containercheck' for='coupons'>Unlimited Coupons" +
+            "<input type='checkbox' id='coupons' name='coupons' onclick='showCouponsAmt();' data-check='1' class='alignInpNumbRight couponsDisabled' disabled ><span class='checkmark'></span></label>" +
+            "</div>" +
+            "<div class='col'>" +
+            "<label for='cant-coupons' class='lbls' id='lblscant-coupons'>Coupons amount</label><br>" +
+            "<input type='text' id='cant-coupons' style='width:100%' min='0' placeholder='00' onkeypress='return soloNumerosInt(this,this.id)' class='alignInpNumbRight validate couponsDisabled' data-validate='Coupons amount' value=" + numCoupons + " autocomplete='off'/>" +
+            "</div>" +
+            "</div>" +
+            "<div class='row'>" +
+            "<div class='col'>" +
+            "<label for='value' class='lbls'>Value</label><br>" +
+            "<input type='text' id='value' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate couponsDisabled' data-validate='Value' value=$" + value + " autocomplete='off'/>" +
+            "</div>" +
+            "<div class='col'>" +
+            "<label for='comision' class='lbls'>Comision</label><br/>" +
+            "<input type='text' id='comision' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate couponsDisabled' data-validate='Comision' value=$" + commission + " autocomplete='off'/>" +
+            "</div>" +
+            "</div>" +
+            "</form>" +
+            "<p id='message-action' style='margin-bottom:10px;'>Let affiliate scan code to create a deal</p>" +
+            "<div id='qr' class='deal dealConfirmed'>DEAL CONFIRMED</div>" +
+            "<div id='alerta' ></div>";
+    } else {
+        if (deal.status != 'no find' && deal.active == "0") {
+            form = "<form style='text-align:left;margin-bottom:10px;'>" +
+                "<label for='dealDes' class='lbls'>Description</label><br/>" +
+                "<textarea id='dealDes' class='txtAreaDesc validate ' style='margin-bottom:10px !important;height:70px;resize:none' data-validate='Description'>" + description + "</textarea>" +
+                "<div>" +
+                "<label for='dealExpire' class='lbls'>Expire date</label><br/>" +
+                "<div class=''><select class='validate' id='dealExpire' name='dealExpire' data-validate='Expire date'>" +
+                "<option value='none'>Select</option>" +
+                "<option value='1' " + ((days == 1) ? "selected='selected'" : "") + "> One day</option>" +
+                "<option value='2' " + ((days == 2) ? "selected='selected'" : "") + "> Two days</option>" +
+                "<option value='5' " + ((days == 5) ? "selected='selected'" : "") + "> Five days</option>" +
+                "<option value='10' " + ((days == 10) ? "selected='selected'" : "") + "> Ten days</option>" +
+                "<option value='15' " + ((days == 15) ? "selected='selected'" : "") + "> Fifteen days</option>" +
+                "<option value='20' " + ((days == 20) ? "selected='selected'" : "") + "> Twenty days</option>" +
+                "<option value='25' " + ((days == 25) ? "selected='selected'" : "") + "> Twenty-five days</option>" +
+                "<option value='30' " + ((days == 30) ? "selected='selected'" : "") + "> Thirty days</option>" +
+                "</select></div>"
+                /*
+                "<div class='inpDate'>"
+                  "<input type='date' id='dealExpire' name='dealExpire' style='width:100%;' class='alignInpNumbRight validate' data-validate='Expire date'><label for='dealExpire'><i class='fas fa-calendar-day fa-flip-horizontal' style='marging-right: 20px;'></i></label>"
+                "</div>"
+               */
+                +
+                "</div>" +
+                "<div class='row'>" +
+                "<div class='col'>" +
+                "<div style='height:25px;'></div><label class='containercheck' for='coupons'>Unlimited Coupons" +
+                "<input type='checkbox' id='coupons' name='coupons' onclick='showCouponsAmt();' data-check='1' class='alignInpNumbRight ' ><span class='checkmark'></span></label>" +
+                "</div>" +
+                "<div class='col'>" +
+                "<label for='cant-coupons' class='lbls' id='lblscant-coupons'>Coupons amount</label><br>" +
+                "<input type='text' id='cant-coupons' style='width:100%' min='0' placeholder='00' onkeypress='return soloNumerosInt(this,this.id)' class='alignInpNumbRight validate ' data-validate='Coupons amount' value=" + numCoupons + " autocomplete='off'/>" +
+                "</div>" +
+                "</div>" +
+                "<div class='row'>" +
+                "<div class='col'>" +
+                "<label for='value' class='lbls'>Value</label><br>" +
+                "<input type='text' id='value' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate ' data-validate='Value' value=$" + value + " autocomplete='off'/>" +
+                "</div>" +
+                "<div class='col'>" +
+                "<label for='comision' class='lbls'>Comision</label><br/>" +
+                "<input type='text' id='comision' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate ' data-validate='Comision' value=$" + commission + " autocomplete='off'/>" +
+                "</div>" +
+                "</div>" +
+                "</form>" +
+                "<p id='message-action' style='margin-bottom:10px;'>Let affiliate scan code to create a deal</p>" +
+                "<div id='qr' class='deal dealNoConfirmed'>DEAL REJECTED</div>" +
+                "<div id='alerta'>" +
+                "</div>"; +
+            "<button class='btnlogine' onclick='validateData(" + LOCATION + "," + CSR + "," + DEALID + ")'>Renew deal</button>&nbsp<button class='btncancel'>Cancel</button>"
+        } else {
+            if (deal.status != "no find" && deal.active > 1) {
+                form = "<form style='text-align:left;margin-bottom:10px;'>" +
+                    "<label for='dealDes' class='lbls'>Description</label><br/>" +
+                    "<textarea id='dealDes' class='txtAreaDesc validate ' style='margin-bottom:10px !important;height:70px;resize:none' data-validate='Description'>" + description + "</textarea>" +
+                    "<div>" +
+                    "<label for='dealExpire' class='lbls'>Expire date</label><br/>" +
+                    "<div class=''><select class='validate' id='dealExpire' name='dealExpire' data-validate='Expire date'>" +
+                    "<option value='none'>Select</option>" +
+                    "<option value='1' " + ((days == 1) ? "selected='selected'" : "") + "> One day</option>" +
+                    "<option value='2' " + ((days == 2) ? "selected='selected'" : "") + "> Two days</option>" +
+                    "<option value='5' " + ((days == 5) ? "selected='selected'" : "") + "> Five days</option>" +
+                    "<option value='10' " + ((days == 10) ? "selected='selected'" : "") + "> Ten days</option>" +
+                    "<option value='15' " + ((days == 15) ? "selected='selected'" : "") + "> Fifteen days</option>" +
+                    "<option value='20' " + ((days == 20) ? "selected='selected'" : "") + "> Twenty days</option>" +
+                    "<option value='25' " + ((days == 25) ? "selected='selected'" : "") + "> Twenty-five days</option>" +
+                    "<option value='30' " + ((days == 30) ? "selected='selected'" : "") + "> Thirty days</option>" +
+                    "</select></div>"
+                    /*
+                "<div class='inpDate'>"
+                  "<input type='date' id='dealExpire' name='dealExpire' style='width:100%;' class='alignInpNumbRight validate' data-validate='Expire date'><label for='dealExpire'><i class='fas fa-calendar-day fa-flip-horizontal' style='marging-right: 20px;'></i></label>"
+                "</div>"
+               */
+                    +
+                    "</div>" +
+                    "<div class='row'>" +
+                    "<div class='col'>" +
+                    "<div style='height:25px;'></div><label class='containercheck' for='coupons'>Unlimited Coupons" +
+                    "<input type='checkbox' id='coupons' name='coupons' onclick='showCouponsAmt();' data-check='1' class='alignInpNumbRight ' ><span class='checkmark'></span></label>" +
+                    "</div>" +
+                    "<div class='col'>" +
+                    "<label for='cant-coupons' class='lbls' id='lblscant-coupons'>Coupons amount</label><br>" +
+                    "<input type='text' id='cant-coupons' style='width:100%' min='0' placeholder='00' onkeypress='return soloNumerosInt(this,this.id)' class='alignInpNumbRight validate ' data-validate='Coupons amount' value=" + numCoupons + " autocomplete='off'/>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='row'>" +
+                    "<div class='col'>" +
+                    "<label for='value' class='lbls'>Value</label><br>" +
+                    "<input type='text' id='value' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate ' data-validate='Value' value=$" + value + " autocomplete='off'/>" +
+                    "</div>" +
+                    "<div class='col'>" +
+                    "<label for='comision' class='lbls'>Comision</label><br/>" +
+                    "<input type='text' id='comision' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate ' data-validate='Comision' value=$" + commission + " autocomplete='off'/>" +
+                    "</div>" +
+                    "</div>" +
+                    "</form>" +
+                    "<p id='message-action' style='margin-bottom:10px;'>Let affiliate scan code to create a deal</p>" +
+                    "<div id='qr'> <span class='deal dealForConfirmed'>DEAL FOR CONFIRM</span></div>" +
+                    "<div id='alerta'>" +
+                    "<img src='../apiweb/temp/" + imageRQ + "'></div>";
+
+            } else {
+                form = "<form style='text-align:left;margin-bottom:10px;'>" +
+                    "<label for='dealDes' class='lbls'>Description</label><br/>" +
+                    "<textarea id='dealDes' class='txtAreaDesc validate' style='margin-bottom:10px !important;height:70px;resize:none' data-validate='Description'></textarea>" +
+                    "<div>" +
+                    "<label for='dealExpire' class='lbls'>Expire date</label><br/>" +
+                    "<div class=''><select class='validate' id='dealExpire' name='dealExpire' data-validate='Expire date'>" +
+                    "<option value='none'>Select</option>" +
+                    "<option value='1'> One day</option>" +
+                    "<option value='2'> Two days</option>" +
+                    "<option value='5'> Five days</option>" +
+                    "<option value='10'> Ten days</option>" +
+                    "<option value='15'> Fifteen days</option>" +
+                    "<option value='20'> Twenty days</option>" +
+                    "<option value='25'> Twenty-five days</option>" +
+                    "<option value='30'> Thirty days</option>" +
+                    "</select></div>"
+                    /*
+                  "<div class='inpDate'>"
+                    "<input type='date' id='dealExpire' name='dealExpire' style='width:100%;' class='alignInpNumbRight validate' data-validate='Expire date'><label for='dealExpire'><i class='fas fa-calendar-day fa-flip-horizontal' style='marging-right: 20px;'></i></label>"
+                  "</div>"
+                 */
+                    +
+                    "</div>" +
+                    "<div class='row'>" +
+                    "<div class='col'>" +
+                    "<div style='height:25px;'></div><label class='containercheck' for='coupons'>Unlimited Coupons<input type='checkbox' id='coupons' name='coupons' onclick='showCouponsAmt();' data-check='1' class='alignInpNumbRight'><span class='checkmark'></span></label>" +
+                    "</div>" +
+                    "<div class='col'>" +
+                    "<label for='cant-coupons' class='lbls' id='lblscant-coupons'>Coupons amount</label><br>" +
+                    "<input type='text' id='cant-coupons' style='width:100%' min='0' placeholder='00' onkeypress='return soloNumerosInt(this,this.id)' class='alignInpNumbRight validate' data-validate='Coupons amount' autocomplete='off'/>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='row'>" +
+                    "<div class='col'>" +
+                    "<label for='value' class='lbls'>Value</label><br>" +
+                    "<input type='text' id='value' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate' data-validate='Value' autocomplete='off'/>" +
+                    "</div>" +
+                    "<div class='col'>" +
+                    "<label for='comision' class='lbls'>Comision</label><br/>" +
+                    "<input type='text' id='comision' style='width:100%;' min='0' placeholder='$0.00' onkeydown='return money(event,this.id);' class='alignInpNumbRight validate' data-validate='Comision' autocomplete='off'/>" +
+                    "</div>" +
+                    "</div>" +
+                    "</form>" +
+                    "<p id='message-action' style='margin-bottom:10px;'>Generate QR code and let affiliate scan the code to activate the deal</p>"
+                    //  "<button type='button' class='btnlogin' id='generate' onclick='validateData();'>Generate QR code</button>"+
+                    +
+                    "<div id='qr'></div>" +
+                    "<div id='alerta'></div>";
+            }
+        }
+    }
+
+
+    alerta += "<ul>";
+
+    Swal.fire({
+        title: "CREATE DEAL",
+        html: form,
+        showConfirmButton: (deal.status == 'no find' && deal.active != 1) ? true : ((deal.active != 1) ? true : false),
+        customClass: { confirmButton: 'btnlogin' },
+        /*cancelButtonColor: '#d33',*/
+        confirmButtonText: 'Generate QR code',
+        /*  onBeforeOpen: () =>
+          {
+            if(deal.status!="no find" || deal.active == "7")
+              persistente(loc);
+            
+          },*/
+        onBeforeOpen: () => { windowOpenClose = 0; },
+        onClose: () => {
+            windowOpenClose = 1;
+            jQuery("#dealDes").removeAttr('disabled');
+            jQuery("#dealExpire").removeAttr('disabled');
+            jQuery("#coupons").removeAttr('disabled');
+            jQuery("#cant-coupons").removeAttr('disabled');
+            jQuery("#value").removeAttr('disabled');
+            jQuery("#comision").removeAttr('disabled');
+            comet.disconnect();
+        },
+        preConfirm: () => {
+            validar = 0;
+            $(".validate").each(function() {
+                if ($(this).val().trim() == "" || $(this).val().trim() == "none" || $(this).val().trim() == "$" || $(this).val().trim() == "$.") {
+                    alerta += "<li>" + $(this).attr('data-validate') + " </li> ";
+                    validar++;
+                }
+                if (jQuery("#coupons").attr("checked") == "checked" && jQuery("#cant-coupons").val() <= 0) {
+                    alerta += "<li> The amount of coupons must be greater than zero</li> ";
+                    validar++;
+                }
+            });
+            if (validar > 0) {
+                alerta += "</ul>";
+                jQuery('#alerta').html('');
+                jQuery('#alerta').html(alerta);
+                alerta = "Please fill the following field";
+                jQuery("#alerta").addClass("alerta");
+                jQuery('#alerta').css('display', 'block');
+                return false;
+            } else {
+                jQuery('#alerta').html('');
+                jQuery('#alerta').css('display', 'none');
+                //console.log("Esto es lo que voy a enviar: "+LOCATION+"  "+CSR+"   "+DEALID);
+                if (validateData(LOCATION, CSR, DEALID) == 0)
+                    return true
+                else
+                    return false;
+            }
+        }
+    });
+    comet.connect(LOCATION);
+}
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var contadorimg = 1;
+var imageDataBase = ""
+var ImageCover = "";
+var ImagesDelete = "";
+var Guide = "";
+var FilesTour = new FormData();
+
+jQuery(document).ready(function() {
+    new AutoNumeric('#inpTourPrice', {
+        currencySymbol: ' $',
+        decimalCharacter: '.',
+        digitGroupSeparator: ',',
+        selectOnFocus: false,
+    });
+
+    new AutoNumeric('#comision', {
+        currencySymbol: ' $',
+        decimalCharacter: '.',
+        digitGroupSeparator: ',',
+        selectOnFocus: false,
+    });
+
+    new AutoNumeric('#value', {
+        currencySymbol: ' $',
+        decimalCharacter: '.',
+        digitGroupSeparator: ',',
+        selectOnFocus: false,
+    });
+
+    var nada = "";
+    var guide = getParameterByName('guide');
+    Guide = guide;
+    var tabulador = getParameterByName('tab');
+    var i = 0;
+
+    jQuery("#et_pb_tab_0").click(function() {
+        jQuery("#locations").hide();
+        jQuery("#createGuide").show();
+
+    });
+    jQuery("#et_pb_tab_1").click(function() {
+        jQuery("#locations").show();
+        jQuery("#locations").css("display", "flex");
+        jQuery("#locatecreate").attr("href", "https://land.travel/create-location/?guide=" + Guide);
+        //console.log(jQuery("#locatecreate").attr("href"));
+        jQuery("#createGuide").hide();
+
+    });
+    if (Guide == "") {
+        Swal.fire({
+            type: 'error',
+            title: 'Guide not found',
+            showCancelButton: false,
+            showConfirmButton: true,
+            confirmButtonText: 'ok',
+            cancelButtonText: 'No',
+            html: "<p>You will be redirected to my guides</p>"
+        }).then((result) => {
+            window.location.href = 'https://land.travel/my-guides/';
+        })
+    }
+    jQuery.ajax({
+        url: "https://land.travel/apiweb/getcategories.php",
+        type: "GET",
+        async: false,
+        dataType: 'json',
+        success: function(data) {
+            if (data.status == "OK") {
+                let cats = data.results;
+                for (let i = 0; i < cats.length; i++) {
+                    jQuery("#inpTourCategory").append("<option value='" + cats[i].id + "'>" + cats[i].title + "</option>");
+                }
+            }
+        },
+        error: function() {
+            location.reload();
+        }
+    });
+    if (!Swal.isVisible()) {
+        comet.disconnect();
+        //comet.doRequest();
+    }
+    jQuery.ajax({
+        url: "https://land.travel/apiweb/gettour.php",
+        type: 'GET',
+        data: { guide: guide },
+        dataType: 'json',
+        success: function(data) {
+            if (data.status == "OK") {
+                //alert(data);
+                //console.log(data.results[i]);
+                var guide = data.results[i].id;
+                var titleguide = data.results[i].title;
+                var description = data.results[i].description;
+                var category = data.results[i].category;
+                var active = data.results[i].active;
+                var location = data.results[i].location;
+                var lang = data.results[i].lang;
+                var type = data.results[i].type;
+                var price = data.results[i].price;
+                var published = data.results[i].published;
+                var public = data.results[i].public;
+                var imagecover = 'https://staging.landtours.co/uploads/' + data.results[i].image_cover;
+                ImageCover = data.results[i].image_cover;
+                var image = data.results[i].image1;
+
+                var images_1 = data.results[i].image1;
+                var res = image.split("|");
+                /*if (res[res.length-1] == "") {
+                  res.pop();
+                }*/
+                var image1 = res;
+                imageDataBase = data.results[i].image1;
+                var loc = data.results[i].locations;
+
+                for (let j = 0; j < loc.length; j++) {
+                    let cover = loc[j].image1;
+                    /*
+                    let coordenadas = (loc[j].lat >= 0)?loc[j].lat + "N": loc[j].lat + "S";
+                    coordenadas += (loc[j].long >= 0)?loc[j].long + "E": loc[j].long + "W";
+                    */
+
+                    let latitud = loc[j].lat;
+                    let longitud = loc[j].long;
+                    let title = (loc[j].title.length > 21) ? loc[j].title.substring(0, 18) + "..." : loc[j].title;
+                    let toltiptitle = loc[j].title
+                    let id = loc[j].id;
+                    let csr = loc[j].csr;
+                    //console.log("este es el valor del csr: "+csr);
+                    let imagepro = "";
+                    let createDeal = "";
+                    let coordenadas = "";
+                    let banderacsr = "";
+                    if (loc[j].poi_type == 1) {
+                        coordenadas = "Business";
+                        if (loc[j].activedeals == 0) {
+                            createDeal = "<div style='width: auto;padding-top: 4px;margin-right: 4px;' class='cursorPointer' onclick='createDeal(" + id + "," + csr + ");'>" +
+                                "        <i class='fas fa-money-check-alt' style='font-size: 30px;color: #ffd740;' title='Create Deal' alt='Create Deal'></i>" +
+                                "      </div>";
+                        } else {
+                            createDeal = "<div style='width: auto;padding-top: 4px;margin-right: 4px; cursor: not-allowed;' >" +
+                                "        <i class='fas fa-money-check-alt' style='font-size: 30px;color: #cccccc;' title='You cannot create or edit the deal while it is active' alt='You cannot create or edit the deal while it is active'></i>" +
+                                "      </div>";
+                        }
+                        banderacsr = " <div style='margin-right:30px;margin-left:auto;background-image:url(https://land.travel/apiweb/img/bandera.png); padding-left: 3px;padding-right: 3px;height: 48px;right: 0%; position:absolute; background-repeat: no-repeat; background-size: 100%; display: inline-block'>" +
+                            "    <div align='center' style='color:#5d4037; padding-bottom:3px'>" +
+                            "    <span>" + csr + "</span></br>" +
+                            "    <span style='top:-9px;position: relative;font-size: 10px'>SMESRS<br /></span>" +
+                            "   </div>" +
+                            "  </div>";
+                    } else {
+                        coordenadas = "Feature";
+                        createDeal = "";
+                        banderacsr = "";
+                    }
+                    let deal = (loc[j].activedeals != 1) ? "<span style='padding: 0 5px; border-radius: 22px; border: solid 2px #bbbbbb;color:#bbbbbb;font-weight:bold;'>No Deals</span>" : "<span style='padding: 0 5px; border-radius: 22px; border: solid 2px #ffd740;color: #ffd740;font-weight:bold;'>Active Deal</span>";
+                    let card = "<div class='card et_pb_column et_pb_column_1_2' style='margin-bottom:20px;margin-right:2% !important;margin-left:0px !important;height:222px !important;position:relative;'>" +
+                        "<div class='image-placeholder' style='width: auto !important;background-image: url(https://staging.landtours.co/uploads/" + cover + ") !important;position:relative;'>" +
+                        "<!--<div style='display:inline-block; position:absolute; top:15px; left:0;' class='free'>Free</div>-->" +
+                        banderacsr +
+                        "<div class='div-imagen' style='top: -9px !important'>" +
+                        "   <div style='top: 0px !important;'>" +
+                        "     <img src='https://land.travel/apiweb/img/3puntos.png'>" +
+                        "   </div>" +
+                        "   <div class='desvanecer' style='top: 0px;'>" +
+                        "     <ul class='lista'>" +
+                        "       <li class='listaguia'>" +
+                        "         <a href='javascript:createDeal(" + id + "," + csr + ");' style='color:#5d4037;'>Create deal</a>" +
+                        "       </li>" +
+                        "     </ul>" +
+                        "   </div>" +
+                        "</div>" +
+                        "<!--<div class='The-sun-also-rises'></div>-->" +
+                        "</div>" +
+                        "<div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20;margin-top: 5px;display: flex; flex-direction: column;'><div style='display: inline-flex;justify-content: space-between;'><span alt='" + toltiptitle + "' title='" + toltiptitle + "'>" + title + "</span>  " + deal + "</div>" +
+                        " <div style='display:inline-flex;justify-content: space-between;width: 100%;'>" +
+                        "    <div class='locations' >" + coordenadas + "</div> " +
+                        "    <div  style='display: inline-flex;width: 50%;justify-content: flex-end;align-items: center;align-content: center;align-self: center;'>" +
+                        createDeal +
+                        "      <div onclick='editlocation(" + id + "," + latitud + "," + longitud + "," + Guide + ");' class='cursorPointer' style='background-color: #ffd740;border-radius: 50px !important;padding-left: 9px;padding-right: 9px;padding-top: 4px;padding-bottom: 4px;width:30px;' >" +
+                        "        <img src ='https://land.travel/apiweb/img/menu_icon.png' title='Edit Location'>" +
+                        "      </div>" +
+                        "      <div style='width: 30px;padding-top: 4px;'>" +
+                        "        <img id='del" + id + "' onclick='dellocation(this.id)' src ='https://land.travel/apiweb/img/delete.png' title='Delete Guide'>" +
+                        "      </div>" +
+                        "    </div>" +
+                        "  </div>" +
+                        "</div>" +
+                        "</div>";
+                    /*
+                      let card = "<div class='card et_pb_column et_pb_column_1_2' style='margin-bottom:20px;margin-right:2% !important;margin-left:0px !important;height: 222px !important;position:relative;'><div class='image-placeholder' style='width: auto !important;background-image: url(https://staging.landtours.co/uploads/" + cover + ") !important;position:relative;'><div style='display:inline-block; position:absolute; top:15px; left:0;' class='free'>Free</div><div style='margin-right:30px;margin-left:auto;background-image:url(https://land.travel/apiweb/img/bandera.png); padding-left: 3px;padding-right: 3px;height: 48px;right: 0%; position:absolute; background-repeat: no-repeat; background-size: 100%; display: inline-block'><div align='center' style='color:#5d4037; padding-bottom:3px'><span>"+csr+"</span></br><span style='top:-9px;position: relative;font-size: 10px'>SMESRS<br /></span></div></div><div class='div-imagen' style='top: -9px !important'><div style='top: 0px !important;'><img src='https://land.travel/apiweb/img/3puntos.png'></div><div class='desvanecer' style='top: 0px;'><ul class='lista'><li class='listaguia'><a href='javascript:createDeal("+id+","+csr+");' style='color:#5d4037;'>Create deal</a></li></ul></div></div><div class='The-sun-also-rises'></div></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20;margin-top: 5px;'>" + title + " " + deal + "<br /><div class='locations' >" + coordenadas + "</div> <div  style='position:relative;top:-20px;float:right;display:inline-block;margin-right:15px'><div onclick='editlocation("+id+","+latitud+","+longitud+","+Guide+");' class='cursorPointer' style='position: relative;background-color: #ffd740;left: -40px;border-radius: 50px !important;padding-left: 9px;padding-right: 9px;padding-top: 4px;padding-bottom: 4px;width:30px;' ><img src ='https://land.travel/apiweb/img/menu_icon.png' title='Edit Location'></div><img id='del" + id + "' onclick='dellocation(this.id)' src ='https://land.travel/apiweb/img/delete.png' title='Delete Guide' style='top: -28px;position:relative'></div></div></div>";
+                     */
+                    /*
+                    let card = "<div class='card et_pb_column et_pb_column_1_2' style='margin-bottom:20px;margin-right:2% !important;margin-left:0px !important;height: 222px !important;position:relative;'><div class='image-placeholder' style='width: auto !important;background-image: url(https://staging.landtours.co/uploads/" + cover + ") !important;position:relative;'><div style='display:inline-block; position:absolute; top:15px; left:0;' class='free'>Free</div><div style='margin-right:30px;margin-left:auto;background-image:url(https://land.travel/apiweb/img/bandera.png); padding-left: 5px;padding-right: 5px;height: 40px;width: 32px;'><div align='center' style='color:#5d4037; padding-bottom:3px'><span>"+csr+"</span></br><span style='top:-9px;position: relative;'>CSR<br /></span></div></div><div class='div-imagen'><div><img src='https://land.travel/apiweb/img/3puntos.png'></div><div class='desvanecer'><ul class='lista'><li class='listaguia'><a href='javascript:createDeal("+id+","+csr+");' style='color:#5d4037;'>Create deal</a></li></ul></div></div><div class='The-sun-also-rises'></div></div><div id='titletour' style='margin-left: 10px;font-family:Roboto;color:#221f20;margin-top: 5px;'>" + title + " " + deal + "<br /><div class='locations' >" + coordenadas + "</div> <div  style='position:relative;top:-20px;float:right;display:inline-block;margin-right:15px'><a href='https://land.travel/edit-location/?id=" +id+ '&lat=' + latitud + '&long=' + longitud + '&guide=' + Guide + "'><div style='position: relative;background-color: #ffd740;left: -40px;border-radius: 50px !important;padding-left: 9px;padding-right: 9px;padding-top: 4px;padding-bottom: 4px;width:30px;' ><img src ='https://land.travel/apiweb/img/menu_icon.png' title='Edit Location'></div></a><img id='del" + id + "' onclick='dellocation(this.id)' src ='https://land.travel/apiweb/img/delete.png' title='Delete Guide' style='top: -28px;position:relative'></div></div></div>";
+                    */
+                    jQuery("#locations").append(card);
+                }
+
+
+                if (tabulador.length > 0) {
+                    jQuery("#et_pb_tab_1").trigger("click");
+                    jQuery("#locations").css("display", "flex");
+                } else
+                    jQuery("#locations").css("display", "none");
+                /****************************** LOADING IMAGES  *******************************/
+
+                var temporal = '<DIV class="photonew" id="PhotoNew' + contadorimg + '">' +
+                    '<div style="display: inline-flex;">' +
+                    '<img src="" data-iscover="1" width="1" height="1" class="imgEditTourr" id="imgEditTour' + contadorimg + '">' +
+                    '<span class="closephoto pointer" data-dlimg="' + contadorimg + '" onclick="deletePhoto(this.id)" id="closer' + contadorimg + '"></span>' +
+                    '<div class="is-cover rect-set-as-cover pointer" onclick="setcoverPhoto(this.id)" data-stcover="' + contadorimg + '" data-isCover="1" id="setcoverPhoto' + contadorimg + '">Cover</div>' +
+                    '</div>' +
+                    '</DIV>';
+                jQuery("#scrollingphoto").append(temporal)
+                jQuery("#imgEditTour" + contadorimg).attr('src', imagecover)
+                jQuery("#imgEditTour" + contadorimg).addClass("photonew");
+                jQuery("#closer" + contadorimg).addClass("closerphoto");
+
+                contadorimg++;
+
+                // console.log("la cantidad de imagenes son: "+image1.length);
+                // console.log("Estas son las imagenes: "+image1);
+                for (i = 0; i < parseInt(image1.length - 1); i++) {
+                    image1[i] = "https://staging.landtours.co/uploads/" + image1[i];
+                    temporal = '<DIV class="photonew" id="PhotoNew' + contadorimg + '">' +
+                        '<div style="display: inline-flex;">' +
+                        '<img src="" data-iscover="0" width="1" height="1" class="imgEditTourr" id="imgEditTour' + contadorimg + '">' +
+                        '<span class="closephoto pointer" data-dlimg="' + contadorimg + '" onclick="deletePhoto(this.id)" id="closer' + contadorimg + '"></span>' +
+                        '<div class="set-as-cover rect-set-as-cover pointer" onclick="setcoverPhoto(this.id)" data-stcover="' + contadorimg + '" data-isCover="0" id="setcoverPhoto' + contadorimg + '">Set as cover</div>' +
+                        '</div>' +
+                        '</DIV>';
+                    jQuery("#scrollingphoto").append(temporal)
+                    jQuery("#imgEditTour" + contadorimg).attr('src', image1[i])
+                    jQuery("#imgEditTour" + contadorimg).addClass("photonew");
+                    jQuery("#closer" + contadorimg).addClass("closerphoto");
+                    contadorimg++;
+                }
+                if (image1.length > 1) { image1.pop(); }
+
+                $("#title").val(titleguide);
+                $("#inpTourTitle").val(titleguide);
+
+                $("#description").val(description);
+                $("#inpTourDescription").val(description);
+                //  alert(document.getElementById("inpTourDescription").value)
+                $("#conteo").text(parseInt(599 - $("#inpTourDescription").val().length));
+                $("#location").val(location);
+                $("#inpTourLocation").val(location);
+
+                $("#inpTourLang").val(lang);
+
+                $("#category").val(category);
+                $("#inpTourCategory").val(category);
+
+                $("#tourtype").val(type);
+                $("#inpTourType").val(type);
+
+
+                $("#inpTourPrice").val("$" + price);
+                document.getElementById("inpTourPublic").checked = (public == "1") ? "checked" : "";
+                document.getElementById("inpTourFree").checked = (parseFloat(price) == 0) ? "checked" : "";
+                $("#inpTourFree").attr('data-check', (parseFloat(price) == 0) ? 0 : 1);
+                $("#images_1").val(images_1);
+                $("#imagecover").attr("src", imagecover);
+                $("#guide").val(guide);
+                $("#image1").attr("src", image1);
+
+                $('#imageHolder').css('width', image1.length * 40);
+
+                $.each(image1, function(index, value) {
+                    $('#imageHolder').append('<img src="' + value + '" />');
+                });
+            } else {
+                Swal.fire({
+                    type: 'error',
+                    title: 'Error',
+                    showCancelButton: false,
+                    showConfirmButton: false,
+                    html: "<h1>Guide not found. You will be redirected to your user profile</h1>"
+                }).then((result) => {
+                    if (Swal.DismissReason.cancel) {
+                        window.location.reload(true);
+                    }
+                    if (result.value) {
+                        window.location.href = 'https://land.travel/user-profile';
+                    } else {
+                        window.location.href = 'https://land.travel/user-profile/';
+                    }
+                })
+            }
+        }
+    });
+
+    if (tabulador.length > 0) {
+        jQuery("#et_pb_tab_1").trigger("click");
+        jQuery("#locations").css("display", "flex");
+    }
+});
+/*************************************** CODIGO NUEVO 14-05-2019 **************************************/
+/*  function i'm allows displayed  the price field, if  field free-tour is are checked or not*/
+function showPrice() {
+    if ($("#inpTourFree").attr("checked") == "checked") {
+
+        $("#inpTourPrice").addClass("couponsDisabled");
+        $("#inpTourPrice").prop('disabled', true);
+        $("#inpTourPrice").val("");
+        $("#inpTourFree").attr("data-check", "1");
+        $("#inpTourPrice").removeClass('validate');
+    } else {
+        $("#inpTourPrice").addClass('validate');
+        $("#inpTourPrice").removeClass("couponsDisabled");
+        $("#inpTourPrice").removeAttr('disabled');
+        $("#inpTourFree").attr("data-check", "0");
+    }
+}
+
+function soloNumeros(e) {
+    // capturamos la tecla pulsada
+    var teclaPulsada = window.event ? window.event.keyCode : e.which;
+
+    // capturamos el contenido del input
+    var valor = document.getElementById("inpTourPrice").value;
+
+    // 45 = tecla simbolo menos (-)
+    // Si el usuario pulsa la tecla menos, y no se ha pulsado anteriormente
+    // Modificamos el contenido del mismo añadiendo el simbolo menos al
+    // inicio
+    if (teclaPulsada == 45 && valor.indexOf("-") == -1) {
+        document.getElementById("inpTourPrice").value = "-" + valor;
+    }
+
+    // 13 = tecla enter
+    // 46 = tecla punto (.)
+    // Si el usuario pulsa la tecla enter o el punto y no hay ningun otro
+    // punto
+    if (teclaPulsada == 13 || (teclaPulsada == 46 && valor.indexOf(".") == -1)) {
+        return true;
+    }
+
+    // devolvemos true o false dependiendo de si es numerico o no
+    return /\d/.test(String.fromCharCode(teclaPulsada));
+}
+
+function deletePhoto(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        customClass: { confirmButton: 'btnlogin' },
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        preConfirm: () => {
+            if (jQuery("#setcoverPhoto" + jQuery("#" + id).attr('data-dlimg')).attr('data-isCover') == '1') {
+                Swal.fire('Warning', 'Before removing you must select another cover image', 'warning');
+
+                return false;
+            } else {
+                var countimg = 0;
+                var sons = jQuery("#scrollingphoto").find(".photonew");
+                sons.each(function() {
+                    imgs = jQuery(this).children('div').find('.imgEditTourr')
+                    imgs.each(function() {
+                        countimg++;
+                    })
+                })
+                if (countimg == 2) {
+                    Swal.fire('Warning', 'Should keep at least one image ', 'warning');
+                    return false;
+                } else
+                    return true;
+            }
+        }
+    }).then((result) => {
+
+        if (result.value) {
+            //console.log("Esta es la clave a buscar: "+"imgEditTour"+jQuery("#"+id).attr("data-dlimg"))
+            var clave = "imgEditTour" + jQuery("#" + id).attr("data-dlimg");
+            var url = jQuery("#imgEditTour" + jQuery("#" + id).attr("data-dlimg")).attr('src');
+            if (url.substring(0, url.indexOf("/")) != "data:image") {
+                ImagesDelete += jQuery("#imgEditTour" + jQuery("#" + id).attr("data-dlimg")).attr('src');
+                ImagesDelete += "|";
+            }
+            jQuery("#PhotoNew" + jQuery("#" + id).attr('data-dlimg')).remove();
+            if (FilesTour.get(clave) != "null")
+                FilesTour.delete(clave);
+            //console.log("Esta es la informacion de la clave indicadad: "+FilesTour.get(clave));
+            Swal.fire(
+                'Deleted!',
+                'Your file has been deleted.',
+                //'',
+                'success'
+            )
+        }
+    })
+}
+
+function setcoverPhoto(id) {
+    var sons = jQuery("#PhotoNew" + jQuery("#" + id).attr("data-stcover")).siblings('div').children('div').find(".is-cover");
+    sons.each(function() {
+        jQuery(this).removeClass('is-cover');
+        jQuery(this).addClass('set-as-cover');
+        jQuery(this).text("Set as cover");
+        jQuery(this).attr("data-isCover", "0");
+        jQuery("#imgEditTour" + jQuery(this).attr("data-stcover")).attr("data-iscover", "0");
+
+
+    })
+    /* 
+    console.log("Este es el padre: "+jQuery("#"+id).attr("data-stcover"));
+        var divs =jQuery("#PhotoNew"+jQuery("#"+id).attr("data-stcover")).siblings('div')
+        divs.each(function(){
+          console.log("Estos son los id: "+jQuery(this).attr('id'));
+        })
+        */
+
+
+
+
+    jQuery("#" + id).addClass("is-cover");
+    jQuery("#" + id).text(" Cover ");
+    jQuery("#" + id).attr("data-isCover", "1");
+    jQuery("#imgEditTour" + jQuery("#" + id).attr("data-stcover")).attr("data-iscover", "1");
+
+
+
+
+    /* jQuery("#PhotoNew"+jQuery("#setcoverPhoto"+id).attr("data-stcover")).siblings('div').children('div').children('span').siblings(".is-cover").addClass('set-as-cover');
+    
+   jQuery("#PhotoNew"+jQuery("#setcoverPhoto"+id).attr("data-stcover")).siblings('div').children('div').children('span').siblings(".is-cover").removeClass('is-cover');*/
+
+
+}
+
+function avatarCrop() {
+    var crop = "";
+    var reader = new FileReader();
+
+    Swal.fire({
+        title: 'Add Picture',
+        html: "<div id='message-change' class='message-change'>Select a picture</div><div id='demo'></div><input type='file' style='display:none' id='avt-img'/><label for='avt-img' class='btnlogin btnprofile pointer' accept='image/png, image/jpg' >Select an image</label>",
+        onBeforeOpen: () => {
+            var demo = document.getElementById("demo");
+            var croppie = new Croppie(demo, {
+                viewport: { width: 300, height: 200 },
+                boundary: { width: 400, height: 300 },
+            });
+            jQuery(demo).hide();
+            document.getElementById("avt-img").onchange = function(e) {
+                var uploaded = this.value,
+                    ext = uploaded.substring(uploaded.lastIndexOf('.') + 1),
+                    ext = ext.toLowerCase(),
+                    fileName = uploaded.substring(uploaded.lastIndexOf("\\") + 1),
+                    accepted = ["jpg", "png", "gif", "jpeg"];
+                if (new RegExp(accepted.join("|")).test(ext)) {
+                    var id = "avt-img";
+                    var contenedor = "scrollphoto";
+                    var peso = 2097152;
+                    if (document.getElementById(id).files[0].size < peso) {
+                        inputAr = '#' + id
+                        var file = document.querySelector(inputAr).files[0];
+
+                        reader.onloadend = function(element) {
+                            croppie.bind({ url: reader.result });
+                            // croppie.result({type:'base64',size:{800,300}})
+                            crop = croppie;
+                            var acumulador = document.getElementById(contenedor).html;
+                            /*console.log(crop)
+                            contadorimg=contadorimg+1;*/
+                        }
+                        /* $
+                         if (file) {reader.readAsDataURL(file);}else {preview.src = "";}*/
+                        reader.readAsDataURL(e.target.files[0]);
+                        jQuery(demo).show();
+                        jQuery("#message-change").hide();
+                    } else {
+                        jQuery("#message-change").text("The file you want to upload exceeds the stipulated " + peso + "Byte and can not be loaded");
+                        jQuery("#message-change").css("color", "#d85f4d");
+                        jQuery("#message-change").css("padding-top", "5%");
+                    }
+                } else {
+                    jQuery("#message-change").text("The file you want to upload is not an image, please check and try again");
+                    jQuery("#message-change").css("color", "#d85f4d");
+                    jQuery("#message-change").css("padding-top", "5%");
+                }
+            }
+        },
+        preConfirm: () => {
+            if (document.getElementById("avt-img").files.length == 0) {
+                jQuery("#message-change").text("You need to select a picture to upload");
+                jQuery("#message-change").css("color", "#d85f4d");
+                jQuery("#message-change").css("padding-top", "5%");
+                return false;
+            } else {
+                return crop;
+            }
+        }
+    }).then((imagine) => {
+
+        //console.log(crop.data.url);
+        imagine.value.result({ type: 'base64', size: { width: 700, height: 500 } }).then((blob) => {
+            FilesTour.append('imgEditTour' + contadorimg, blob);
+
+
+            var temporal = '<DIV class="photonew" data-acountId="' + contadorimg + '" id="PhotoNew' + contadorimg + '">' +
+                '<div style="display: inline-flex;">' +
+                '<img src="" data-iscover="0" class="imgEditTourr" width="1" height="1" id="imgEditTour' + contadorimg + '">' +
+                '<span class="closephoto pointer" data-dlimg="' + contadorimg + '" onclick="deletePhoto(this.id)" id="closer' + contadorimg + '"></span>' +
+                '<div class="set-as-cover rect-set-as-cover pointer" onclick="setcoverPhoto(this.id)" data-stcover="' + contadorimg + '" data-isCover="0" id="setcoverPhoto' + contadorimg + '">Set as cover</div>' +
+                '</div>' +
+                '</DIV>';
+            jQuery("#scrollingphoto").append(temporal)
+            jQuery("#imgEditTour" + contadorimg).attr('src', blob)
+            jQuery("#imgEditTour" + contadorimg).addClass("photonew");
+            jQuery("#closer" + contadorimg).addClass("closerphoto");
+            contadorimg++;
+        })
+    });
+}
+
+function editTour() {
+    var alerta = "Please completed, next fields:";
+    var boton = "";
+    var validar = 0;
+    $("#btnEditTourSave").prop('disabled', true);
+    $("#btnEditTourSave").text('PLEASE WAIT');
+    $("#btnEditTourSave").prepend("<i class='fa fa-spinner fa-pulse fa-spin'></i>  ");
+    $("#btnEditTourSave").removeClass("btnEditTourSaveSucces");
+    $("#btnEditTourSave").addClass("btnEditTourSaveWait");
+    alerta += "<ul>";
+    $(".validate").each(function() {
+        if ($(this).val().trim() == "" || $(this).val().trim() == "none" || $(this).val().trim() == "$" || $(this).val().trim() == "$.") {
+
+            if (boton == 'editar') {
+                if ($(this).attr('type') != 'file') {
+                    alerta += "<li>" + $(this).prev(".lbls").text() + " </li> ";
+                    validar++;
+                }
+            } else {
+                alerta += "<li>" + $(this).attr('data-validate') + " </li> ";
+
+                validar++;
+                //console.log($(this).attr('data-validate'));
+            }
+        }
+        if ($(this).attr('id') == 'inpTourDescription') {
+            if ($("#" + $(this).attr('id')).val().length < 10) {
+                alerta += "<li>Description should not be less than 10 characters </li> ";
+                validar++;
+            }
+
+        }
+    });
+    if (validar > 0) {
+        alerta += "</ul>";
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            html: alerta
+
+        })
+        $("#btnEditTourSave").removeAttr('disabled').text("EDIT TOUR");
+        $("#btnEditTourSave").removeClass("btnEditTourSaveWait");
+        $("#btnEditTourSave").addClass("btnEditTourSaveSucces");
+
+    } else {
+        var imagesEdit = "";
+        var imagesSaveEdit = "";
+        var coverimage = "";
+        var sons = jQuery("#scrollingphoto").find(".photonew");
+        sons.each(function() {
+            imgs = jQuery(this).children('div').find('.imgEditTourr')
+
+            imgs.each(function() {
+                //console.log("este es un id: "+jQuery(this).attr('id'));
+                url = jQuery(this).attr('src');
+                if (url.substring(0, url.indexOf("/")) != "data:image") {
+                    if (jQuery(this).attr("data-iscover") == "1")
+                        coverimage = jQuery(this).attr('src').substring(parseInt(url.lastIndexOf("/") + 1), url.length);
+
+                    imagesSaveEdit += url.substring(parseInt(url.lastIndexOf("/") + 1), url.length);
+                    imagesSaveEdit += "|";
+                } else {
+                    imagesEdit += jQuery(this).attr('id');
+                    imagesEdit += "|";
+                    if (jQuery(this).attr("data-iscover") == "1")
+                        coverimage = jQuery(this).attr('id');
+
+                    imagesSaveEdit += jQuery(this).attr('id');
+                    imagesSaveEdit += "|";
+
+                }
+            })
+
+
+        })
+        imagesEdit = imagesEdit.substring(0, imagesEdit.length);
+        //console.log("Esta es la imagen de cubierta: "+coverimage);
+        //console.log("Aqui estas son las imagenes: "+imagesSaveEdit+" estas son las que estaban en la base de datos: "+imageDataBase);
+        var dataSend = new FormData(document.getElementById('form'));
+
+        //dataSend.append("ImagesDelete",ImagesDelete);
+        FilesTour.append("IdImagesNew", imagesEdit);
+        FilesTour.append("ImagesDelete", ImagesDelete);
+        if (ImageCover != coverimage)
+            FilesTour.append('NewCover', coverimage);
+        else
+            FilesTour.append('NewCover', ImageCover);
+
+        FilesTour.append('NewsImages', imagesSaveEdit)
+
+        FilesTour.append("inpTourLocation", jQuery("#inpTourLocation").val());
+        FilesTour.append("inpTourCategory", jQuery("#inpTourCategory").val());
+        FilesTour.append("inpTourTitle", jQuery("#inpTourTitle").val());
+        FilesTour.append("inpTourType", jQuery("#inpTourType").val());
+        FilesTour.append("inpTourDescriptione", jQuery("#inpTourDescription").val());
+        FilesTour.append("inpTourFree", (jQuery("#inpTourFree").attr('checked') == "checked") ? 1 : 0);
+        FilesTour.append("inpTourPublic", (jQuery("#inpTourPublic").attr('checked') == "checked") ? 1 : 0)
+        var vls = (jQuery("#inpTourPrice").val().substring(0, 2) == "$.") ? "0." + jQuery("#inpTourPrice").val().substring(2) : jQuery("#inpTourPrice").val().substring(1);
+        FilesTour.append("inpTourPrice", vls);
+        FilesTour.append("inpTourLang", jQuery("#inpTourLang").val());
+        FilesTour.append("Guide", Guide);
+
+        //}
+        var boton = "enviar";
+        $.ajax({
+            url: 'https://land.travel/apiweb/backedittour.php',
+            data: FilesTour,
+            dataType: 'json',
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: "POST",
+            beforeSend: function() {
+
+            },
+            success: function(data) {
+                //console.log("Este es el response:")
+                //console.log(data);
+                if (data.estado == "fine") {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Great',
+                        text: 'The guide has been edited correctly'
+                    })
+                    $("#btnEditTourSave").removeAttr('disabled').text("EDIT TOUR");
+                    $("#btnEditTourSave").removeClass("btnEditTourSaveWait");
+                    $("#btnEditTourSave").addClass("btnEditTourSaveSucces");
+                }
+
+            },
+            error: function(response) {
+
+                Swal.fire({
+                    type: 'error',
+                    title: 'Error',
+                    text: 'An error ocurred with the request, please try again later'
+                })
+
+                $("#btnEditTourSave").removeAttr('disabled').text("EDIT TOUR");
+                $("#btnEditTourSave").removeClass("btnEditTourSaveWait");
+                $("#btnEditTourSave").addClass("btnEditTourSaveSucces");
+
+            }
+
+        })
+    }
+
+}
+
+function textvalidate(texto) {
+    var maxText = 599;
+    if (texto.value.length > 599) {
+        return false;
+    } else {
+
+        jQuery("#conteo").text(parseInt(maxText) - texto.value.length);
+    }
+}
+var Comet = function(data_url) {
+    //var LoCaTiOn;
+    this.timestamp = 0;
+    this.url = data_url;
+    this.noerror = true;
+    this.LoCaTiOn = 0;
+    this.windowOpenClose = windowOpenClose;
+    this.connect = function(LOCATION) {
+        var self = this;
+        self.LoCaTiOn = LOCATION;
+        $.ajax({
+            type: 'get',
+            url: this.url,
+            dataType: 'json',
+            data: { 'locationId': self.LoCaTiOn, 'timestamp': self.timestamp, 'windowOpenClose': self.windowOpenClose },
+            success: function(response) {
+                self.timestamp = response.timestamp;
+                self.LoCaTiOn = response.mylocation;
+                self.windowOpenClose = response.windowOpenClose;
+                self.handleResponse(response);
+                self.noerror = true;
+
+            },
+            complete: function(response) {
+                // send a new ajax request when this request is finished
+                LoCaTiOn = response.mylocation;
+                //console.log("completado "+self.windowOpenClose);
+                if (!self.noerror) {
+                    if (self.windowOpenClose == windowOpenClose)
+                        setTimeout(function() { comet.connect(self.LoCaTiOn); }, 1000);
+                    /* else
+                       console.log("Close conection comet");
+                       */
+                } else {
+                    if (self.windowOpenClose == windowOpenClose)
+                        self.connect(self.LoCaTiOn);
+                    /* else
+                        console.log("Close conection comet");
+                        */
+
+
+                }
+                self.noerror = false;
+            }
+        });
+    }
+    this.disconnect = function() {
+        //console.log("me desconnecto "+self.windowOpenClose);
+    }
+    this.handleResponse = function(response) {
+        dealctive = response.active;
+        if (dealctive == 1) {
+            jQuery("#qr").removeClass("dealNoConfirmed");
+            jQuery("#qr").removeClass("dealForConfirmed");
+            jQuery("#qr").addClass("dealConfirmed");
+            jQuery("#qr").text("Deal Confirmed");
+            jQuery("#alerta").html("");
+            jQuery("#dealDes").prop('disabled', true);
+            jQuery("#dealExpire").prop('disabled', true);
+            jQuery("#coupons").prop('disabled', true);
+            jQuery("#cant-coupons").prop('disabled', true);
+            jQuery("#value").prop('disabled', true);
+            jQuery("#comision").prop('disabled', true);
+            jQuery("#dealDes").addClass('couponsDisabled');
+            jQuery("#dealExpire").addClass('couponsDisabled');
+            jQuery("#coupons").addClass('couponsDisabled');
+            jQuery("#cant-coupons").addClass('couponsDisabled');
+            jQuery("#value").addClass('couponsDisabled');
+            jQuery("#comision").addClass('couponsDisabled');
+            jQuery(".swal2-confirm").css('display', 'none');
+        }
+        if (dealctive == 0) {
+            jQuery("#qr").removeClass("dealNoConfirmed");
+            jQuery("#qr").removeClass("dealForConfirmed");
+            jQuery("#qr").addClass("dealNoConfirmed");
+            jQuery("#qr").text("DEAL REJECTED");
+            jQuery("#alerta").html("");
+        }
+    }
+}
+var comet = new Comet('https://land.travel/apiweb/verifydeal.php');
+
+function dellocation(location) {
+    location = location.replace("del", "");
+
+    Swal.fire({
+        title: 'Are you sure you want to delete this location?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.value) {
+            jQuery.ajax({
+                url: "https://land.travel/apiweb/dellocation.php",
+                type: 'GET',
+                data: { location: location },
+                //dataType: 'json',
+                success: function(data) {
+                    Swal.fire({
+                        title: '<strong>Location Deleted</strong>',
+                        type: 'info',
+                        html: '<br><strong>Please press Great to continue</strong> ',
+                        focusConfirm: false,
+                        confirmButtonText: '<i class="fa fa-thumbs-up"></i> Great!',
+                        confirmButtonAriaLabel: 'Thumbs up, great!',
+                        cancelButtonText: '<i class="fa fa-thumbs-down"></i>',
+                        cancelButtonAriaLabel: 'Thumbs down',
+                    }).then(
+                        function() { window.location.reload(); },
+                        function() { return false; }
+                    ); //fin del elemento sweet button
+                }
+            });
+        }
+    })
+}
+
+/***** FUNCION AGREGADA PARA ELIMINAR LA LATITUD Y LONGITUD DE LA URL 02-09-2019 ********/
+function editlocation(id, latt, logt, guidd) {
+    //console.log(id);
+    jQuery.ajax({
+        url: 'https://land.travel/apiweb/loadlocationlatlon.php',
+        type: 'POST',
+        dataType: 'json',
+        data: { 'latreg': latt, 'lonreg': logt },
+        beforeSend: function() {},
+        success: function(data) {
+            if (data[0] != "" && data[1] != "") {
+                window.location.href = "https://land.travel/edit-location/?id=" + id + "&guide=" + guidd;
+            } else {
+                Swal.fire({
+                    type: 'error',
+                    title: 'Error',
+                    text: 'url not available, you will be redirected to my guides'
+                }).then((result) => {
+                    if (Swal.DismissReason.cancel) {
+                        window.location.href = 'https://land.travel/my-guides/';
+                    }
+                    if (result.value) {
+                        window.location.href = 'https://land.travel/my-guides/';
+                    } else {
+                        window.location.href = 'https://land.travel/my-guides/';
+                    }
+                })
+
+            }
+        }
+    })
+}
+/***************************************************************************************************************/
+</script>
